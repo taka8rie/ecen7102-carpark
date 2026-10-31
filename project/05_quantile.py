@@ -12,6 +12,7 @@
 运行：python 05_quantile.py
 """
 from common import *
+from common import interval_metrics as interval_metrics_common
 import xgboost as xgb
 import matplotlib
 matplotlib.use("Agg")
@@ -29,19 +30,9 @@ def design(X):
     return D
 
 
-def pinball(y, q, tau):
-    """平均弹球损失 ρ_τ(y − q)（原理讲义 9 章）。"""
-    u = np.asarray(y) - np.asarray(q)
-    return float(np.mean(np.maximum(tau * u, (tau - 1) * u)))
-
-
 def interval_metrics(y, lo, hi, q50=None):
-    y, lo, hi = map(np.asarray, (y, lo, hi))
-    out = {"coverage": float(np.mean((y >= lo) & (y <= hi))),       # 应接近 0.80
-           "below": float(np.mean(y < lo)),                          # 应接近 0.10
-           "above": float(np.mean(y > hi)),                          # 应接近 0.10
-           "width": float(np.mean(hi - lo)),
-           "interval_score": float(np.mean((hi - lo) + 2 / ALPHA * (lo - y) * (y < lo) + 2 / ALPHA * (y - hi) * (y > hi)))}
+    """在 common.interval_metrics 的基础上，再加上中位数的 MAE。"""
+    out = interval_metrics_common(y, lo, hi, ALPHA)
     if q50 is not None:
         out["MAE_q50"] = mae(y, q50)
     return out

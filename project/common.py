@@ -58,3 +58,29 @@ def mae(y, yhat):
 
 def rmse(y, yhat):
     return float(np.sqrt(np.mean((np.asarray(y) - np.asarray(yhat)) ** 2)))
+
+
+# ---------- 区间评价（原理讲义第 09、11 章） ----------
+def pinball(y, q, tau):
+    """平均弹球损失 ρ_τ(y − q)。"""
+    u = np.asarray(y, dtype=float) - np.asarray(q, dtype=float)
+    return float(np.mean(np.maximum(tau * u, (tau - 1) * u)))
+
+
+def interval_metrics(y, lo, hi, alpha=0.2):
+    """覆盖率、低于下界 / 高于上界的比例、平均宽度、区间分数。"""
+    y, lo, hi = (np.asarray(v, dtype=float) for v in (y, lo, hi))
+    return {"coverage": float(np.mean((y >= lo) & (y <= hi))),
+            "below": float(np.mean(y < lo)),
+            "above": float(np.mean(y > hi)),
+            "width": float(np.mean(hi - lo)),
+            "interval_score": float(np.mean((hi - lo) + 2 / alpha * (lo - y) * (y < lo)
+                                            + 2 / alpha * (y - hi) * (y > hi)))}
+
+
+def conformal_quantile(scores, alpha):
+    """分裂共形：取第 k = ⌈(n+1)(1−α)⌉ 小的分数（原理讲义 10.1）。k > n 时返回无穷大。"""
+    s = np.sort(np.asarray(scores, dtype=float))
+    n = len(s)
+    k = int(np.ceil((n + 1) * (1 - alpha)))
+    return float(s[k - 1]) if k <= n else float("inf")

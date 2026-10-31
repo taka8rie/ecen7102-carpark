@@ -12,6 +12,8 @@ Claude_work/
     ├── 03_baselines.py       第 3 步：三个基线
     ├── 04_models.py          第 4 步：Ridge 与 XGBoost
     ├── 05_quantile.py        第 5 步：分位数 XGBoost（未校准的 80% 区间）
+    ├── 06_conformal.py       第 6 步：共形校准（固定宽度、CQR、分小时 CQR、ACI）
+    ├── 07_evaluate.py        第 7 步：最终评估、可靠性、单边保证、报告用的表和图
     ├── data/                 中间数据（脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -25,6 +27,8 @@ python 02_features.py
 python 03_baselines.py
 python 04_models.py
 python 05_quantile.py
+python 06_conformal.py
+python 07_evaluate.py
 ```
 每一步都会读上一步的输出，所以要按顺序跑。
 
