@@ -26,6 +26,7 @@
     ├── 02_features.py        第 2 步：做特征（H = 4 即 1 小时；H = 96 即 24 小时）
     ├── 03_baselines.py       第 3 步：三个基线
     ├── 04_models.py          第 4 步：Ridge 与 XGBoost（预测变化量）
+    ├── 05_quantile.py        第 5 步：分位数 XGBoost（未校准的 80% 区间）
     ├── data/                 中间数据（不进仓库，运行脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -39,6 +40,7 @@ python 01_prepare.py
 python 02_features.py
 python 03_baselines.py
 python 04_models.py
+python 05_quantile.py
 ```
 
 如果要从官方原始 JSON 重新生成 `cp2023.parquet`（JSON 有 269 MB，不在仓库里）：
@@ -63,7 +65,7 @@ python build_calendar.py um_holidays_2023.csv um_calendar_2023.csv
 - [x] 第 2 步：特征
 - [x] 第 3 步：基线（persistence / seasonal naive / profile mean）
 - [x] 第 4 步：Ridge、XGBoost 点预测
-- [ ] 第 5 步：分位数 XGBoost
+- [x] 第 5 步：分位数 XGBoost（未校准 80% 区间实际覆盖：1 小时 77%，24 小时 61%）
 - [ ] 第 6 步：共形预测（固定宽度、CQR，可选 ACI）
 - [ ] 第 7 步：11–12 月模拟评估与分时段分析
 - [ ] 报告（11/16）与展示（11/25）

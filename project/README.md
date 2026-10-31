@@ -11,6 +11,7 @@ Claude_work/
     ├── 02_features.py        第 2 步：做特征（H = 4 和 H = 96）
     ├── 03_baselines.py       第 3 步：三个基线
     ├── 04_models.py          第 4 步：Ridge 与 XGBoost
+    ├── 05_quantile.py        第 5 步：分位数 XGBoost（未校准的 80% 区间）
     ├── data/                 中间数据（脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -23,6 +24,7 @@ python 01_prepare.py
 python 02_features.py
 python 03_baselines.py
 python 04_models.py
+python 05_quantile.py
 ```
 每一步都会读上一步的输出，所以要按顺序跑。
 
