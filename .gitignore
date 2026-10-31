@@ -1,0 +1,8 @@
+# 脚本自动生成的中间数据（可由 01–03 脚本重新生成）
+project/data/
+# 原始 JSON 太大（269 MB），不放进仓库
+*.json
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store

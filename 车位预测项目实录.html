@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>车位预测项目实录</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: long-form textbook column with a sticky chapter rail on wide screens; chapters marked like numbered parking bays. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#14171b; --ink2:#434a53; --muted:#69707a; --rule:#dce0e6;
+  --tint:#edf1f7; --code:#eef1f5; --accent:#1d5fbf; --mark:#e0a100; --mark-ink:#8a6200;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --off:#c6ccd4; --warn:#b4410e; --hatch:#c9ced6;
+  --f-body:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  --f-head:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","STSong","SimSun",serif;
+  --f-mono:"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121417; --surface:#191c20; --ink:#eceef1; --ink2:#bcc2ca; --muted:#8e96a0; --rule:#2c3138;
+  --tint:#1b2129; --code:#1c2127; --accent:#72a8f2; --mark:#f0b429; --mark-ink:#f0b429;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --off:#3b414a; --warn:#f08a5d; --hatch:#3b414a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#191c20; --ink:#eceef1; --ink2:#bcc2ca; --muted:#8e96a0; --rule:#2c3138;
+  --tint:#1b2129; --code:#1c2127; --accent:#72a8f2; --mark:#f0b429; --mark-ink:#f0b429;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --off:#3b414a; --warn:#f08a5d; --hatch:#3b414a; color-scheme:dark}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 96px}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px}
+main{min-width:0;max-width:780px}
+/* rail */
+nav.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;max-height:calc(100vh - 40px);overflow:auto;font-size:13.5px;line-height:1.5;padding-right:4px}
+nav.rail ol,details.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+nav.rail a,details.toc a{display:grid;grid-template-columns:2.4em 1fr;gap:6px;color:var(--ink2);text-decoration:none;padding:5px 6px;border-radius:4px}
+nav.rail a:hover,details.toc a:hover{background:var(--tint);color:var(--ink)}
+nav.rail a.on{color:var(--ink);background:var(--tint)}
+nav.rail .n,details.toc .n{font-family:var(--f-mono);color:var(--muted);font-size:12px;padding-top:1px}
+nav.rail .ttl{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px 6px;text-transform:uppercase}
+details.toc{display:none;border:1px solid var(--rule);background:var(--surface);border-radius:6px;padding:8px 12px;margin:20px 0 8px}
+details.toc summary{cursor:pointer;font-weight:600}
+@media (max-width:1020px){.layout{grid-template-columns:minmax(0,1fr)}nav.rail{display:none}details.toc{display:block}}
+/* header */
+.top{display:grid;gap:14px;padding-bottom:28px;border-bottom:1px solid var(--rule);margin-bottom:8px}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px}
+.kicker b{color:var(--mark-ink);font-weight:600}
+h1{font-family:var(--f-head);font-weight:700;font-size:clamp(30px,5vw,44px);line-height:1.2;margin:0;text-wrap:balance;letter-spacing:.01em}
+.lede{font-size:17px;color:var(--ink2);margin:0;max-width:62ch}
+.legend-blocks{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
+.legend-blocks li{display:flex;align-items:center;gap:6px}
+/* chapters */
+section.ch{padding-top:44px;scroll-margin-top:12px}
+.ch-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;margin-bottom:10px}
+.bay{font-family:var(--f-mono);font-weight:700;font-size:20px;color:var(--ink);border-left:4px solid var(--mark);border-right:4px solid var(--mark);padding:6px 12px;line-height:1;background:var(--surface);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted);margin:0;text-transform:uppercase}
+h2{font-family:var(--f-head);font-size:clamp(23px,3.4vw,29px);line-height:1.3;margin:2px 0 0;text-wrap:balance}
+h3{font-size:18px;margin:30px 0 6px;line-height:1.4;text-wrap:balance}
+h4{font-size:15.5px;margin:20px 0 4px}
+p{margin:10px 0}
+a{color:var(--accent)}
+.goal{color:var(--ink2);margin:6px 0 4px}
+/* blocks */
+.blk{margin:18px 0;padding:14px 16px;border-radius:6px;background:var(--surface);border:1px solid var(--rule)}
+.blk>.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;font-weight:600;margin-bottom:2px;text-transform:uppercase}
+.blk>.tag::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.blk.intu>.tag{color:var(--accent)}
+.blk.form>.tag{color:var(--ink2)}
+.blk.ex{background:var(--tint);border-color:transparent}
+.blk.ex>.tag{color:var(--mark-ink)}
+.blk.code>.tag{color:var(--muted)}
+.blk.proj>.tag{color:var(--s3)}
+.blk.pit{border-style:dashed;border-color:var(--warn)}
+.blk.pit>.tag{color:var(--warn)}
+.blk.spec{border-style:dotted;border-color:var(--muted)}
+.blk.spec>.tag{color:var(--muted)}
+.blk>:last-child{margin-bottom:0}
+.blk ul,.blk ol,main>section ul,main>section ol{padding-left:1.3em;margin:8px 0}
+li{margin:3px 0}
+.eq{overflow-x:auto;overflow-y:hidden;padding:6px 2px;margin:8px 0;-webkit-overflow-scrolling:touch}
+math{font-family:"STIX Two Math","Latin Modern Math","Cambria Math","Noto Sans Math",math;font-size:1.06em}
+math[display="block"]{display:block math;margin:0 auto}
+.katex-display{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:4px 0;-webkit-overflow-scrolling:touch}
+.katex{max-width:100%}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--code);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--f-mono);font-size:13px;line-height:1.6;background:var(--code);padding:12px 14px;border-radius:5px;overflow-x:auto;margin:10px 0;tab-size:4}
+pre code{background:none;padding:0;font-size:inherit}
+pre .c{color:var(--muted)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;min-width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13px;background:var(--tint)}
+td.num,th.num{text-align:right}
+tr.best td{background:color-mix(in srgb,var(--s3) 14%,transparent)}
+.small{font-size:13.5px;color:var(--muted)}
+.kbd{font-family:var(--f-mono);font-size:.9em}
+/* figures */
+figure{margin:22px 0;padding:0}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+figcaption b{color:var(--ink2)}
+.plotbox{position:relative;width:100%;min-width:0}
+svg.plot{display:block;overflow:visible;max-width:100%}
+.plot .grid{stroke:var(--rule);stroke-width:1}
+.plot .axis{stroke:var(--muted);stroke-width:1}
+.plot .tick{fill:var(--muted);font-size:11px;font-family:var(--f-mono)}
+.plot .alab{fill:var(--ink2);font-size:12px;font-family:var(--f-body)}
+.plot .lab{fill:var(--ink);font-size:12px;font-family:var(--f-body)}
+.plot .labm{fill:var(--muted);font-size:11.5px;font-family:var(--f-body)}
+.plot .l1{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round}
+.plot .l2{fill:none;stroke:var(--s2);stroke-width:2;stroke-linejoin:round}
+.plot .l2d{fill:none;stroke:var(--s2);stroke-width:2;stroke-dasharray:5 4}
+.plot .lm{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
+.plot .lthin{fill:none;stroke:var(--s1);stroke-width:1.5}
+.plot .band1{fill:var(--s1);opacity:.18}
+.plot .band2{fill:var(--s2);opacity:.16}
+.plot .d1{fill:var(--s1)}
+.plot .d2{fill:var(--s2)}
+.plot .d3{fill:var(--s3)}
+.plot .dout{fill:var(--surface);stroke:var(--s2);stroke-width:1.6}
+.plot .ring{fill:var(--s1);stroke:var(--surface);stroke-width:2}
+.plot .bar1{fill:var(--s1)}
+.plot .res{stroke:var(--s2);stroke-width:1.5}
+.plot .xhair{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.plot .vmark{stroke:var(--ink2);stroke-width:1;stroke-dasharray:3 3}
+.plot .rug{stroke:var(--s1);stroke-width:1.2;opacity:.75}
+.tip{position:absolute;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:5px 8px;font-size:12px;line-height:1.5;white-space:nowrap;box-shadow:0 2px 8px rgb(0 0 0 / .12);z-index:2;font-variant-numeric:tabular-nums}
+.key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--ink2);margin:6px 0 0;padding:0;list-style:none}
+.key li{display:flex;align-items:center;gap:6px;margin:0}
+.sw{width:14px;height:3px;border-radius:2px;background:var(--s1);display:inline-block}
+.sw.b{height:10px;opacity:.35}
+.sw.s2{background:var(--s2)} .sw.s3{background:var(--s3)} .sw.off{background:var(--off)} .sw.m{background:var(--muted)}
+.sw.dot{width:9px;height:9px;border-radius:50%}
+.sw.hollow{width:9px;height:9px;border-radius:50%;background:transparent;border:1.6px solid var(--s2)}
+.sw.dash{background:repeating-linear-gradient(90deg,var(--s2) 0 5px,transparent 5px 9px)}
+.sw.mdash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 8px)}
+/* widgets */
+.widget{border:1px solid var(--rule);border-radius:8px;background:var(--surface);padding:14px 14px 12px;margin:22px 0}
+.widget .wt{font-weight:650;font-size:15px;margin:0 0 2px}
+.widget .wsub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:4px 0 10px;font-size:13.5px}
+.ctrls label{display:flex;align-items:center;gap:8px}
+.ctrls input[type=range]{width:170px;accent-color:var(--accent)}
+.ctrls output{font-family:var(--f-mono);min-width:3.5em;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{padding:5px 10px;cursor:pointer;font-size:13px;border-right:1px solid var(--rule)}
+.seg label:last-child{border-right:0}
+.seg input:checked+label{background:var(--accent);color:var(--surface)}
+.seg input:focus-visible+label{outline:2px solid var(--accent);outline-offset:-2px}
+button.btn{font:inherit;font-size:13px;padding:5px 12px;border-radius:6px;border:1px solid var(--rule);background:var(--tint);color:var(--ink);cursor:pointer}
+button.btn:hover{border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px}
+.readout div{background:var(--tint);border-radius:5px;padding:6px 10px;font-size:12.5px;color:var(--muted)}
+.readout b{display:block;font-family:var(--f-mono);font-size:16px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.two>*{min-width:0}
+/* pipeline */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:16px 0;padding:0;list-style:none;counter-reset:f}
+.flow li{flex:1 1 130px;min-width:0;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;font-size:13.5px;line-height:1.5;position:relative;margin:0}
+.flow li b{display:block;font-size:14.5px;color:var(--ink)}
+.flow li span{color:var(--muted);font-size:12.5px}
+.flow li .ref{font-family:var(--f-mono);font-size:11px;color:var(--mark-ink);display:block;margin-top:4px}
+/* slot strip */
+.slots{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;margin:12px 0 4px;font-family:var(--f-mono);font-size:11px;text-align:center}
+.slots div{padding:8px 0;border-radius:3px;background:var(--s1);color:#fff;opacity:.85}
+.slots div.now{outline:2px solid var(--ink);outline-offset:1px;opacity:1}
+.slots div.fut{background:repeating-linear-gradient(135deg,var(--hatch) 0 4px,transparent 4px 8px);color:var(--ink2);opacity:1;border:1px solid var(--rule)}
+.slots div.tgt{background:var(--s2);color:#fff;opacity:1}
+.slotlab{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;font-family:var(--f-mono);font-size:10.5px;color:var(--muted);text-align:center}
+@media (max-width:480px){.slots,.slotlab{font-size:9px}}
+.diagram{overflow-x:auto;margin:14px 0}
+.diagram svg{display:block;max-width:none}
+.diagram text{font-family:var(--f-body)}
+.dg-box{fill:var(--surface);stroke:var(--ink2);stroke-width:1.2}
+.dg-leaf{fill:var(--tint);stroke:var(--s2);stroke-width:1.4}
+.dg-line{stroke:var(--muted);stroke-width:1.3;fill:none}
+.dg-t{fill:var(--ink);font-size:13px}
+.dg-s{fill:var(--muted);font-size:11.5px}
+.dg-acc{fill:var(--s1)}
+.dg-acc2{fill:var(--s2)}
+.dg-off{fill:var(--off)}
+.dg-ring{fill:none;stroke:var(--s2);stroke-width:2}
+.gloss{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}
+@media (max-width:560px){.gloss{grid-template-columns:minmax(0,1fr)}}
+.gloss div{padding:6px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.gloss b{font-weight:600}
+.gloss i{font-style:normal;color:var(--muted);font-family:var(--f-mono);font-size:12.5px}
+ol.refs{font-size:13.5px;line-height:1.6;padding-left:1.4em}
+ol.refs li{margin:6px 0}
+.endnote{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+</style><style>.plot .l3{fill:none;stroke:var(--s3);stroke-width:1.6;stroke-linejoin:round}.plot .lk{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}</style>
+<style>
+/* additions for the project log: status pills on the step tracker */
+.steps{list-style:none;margin:16px 0;padding:0;display:grid;gap:6px}
+.steps li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 12px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;margin:0}
+.steps .n{font-family:var(--f-mono);color:var(--muted);font-size:13px}
+.steps .d{font-size:14.5px}
+.steps .d small{display:block;color:var(--muted);font-size:12.5px}
+.pill{font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;white-space:nowrap;border:1px solid var(--rule);color:var(--muted)}
+.pill.done{background:color-mix(in srgb,var(--s3) 16%,transparent);border-color:color-mix(in srgb,var(--s3) 50%,transparent);color:var(--ink)}
+.pill.next{background:color-mix(in srgb,var(--mark) 22%,transparent);border-color:var(--mark);color:var(--ink)}
+.pill.done::before{content:"✓ "}
+.pill.next::before{content:"→ "}
+td.win{font-weight:700}
+td.win::after{content:" ★";color:var(--mark-ink);font-weight:400}
+.chk{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.chk label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.chk input{accent-color:var(--accent)}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:14px 0}
+.score div{border:1px solid var(--rule);border-left:4px solid var(--mark);background:var(--surface);padding:10px 14px;border-radius:4px}
+.score b{display:block;font-family:var(--f-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.score span{font-size:13px;color:var(--muted)}
+#tbl-res th,#tbl-res td,#tbl-reg th,#tbl-reg td{white-space:nowrap}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="kicker"><span><b>ECEN 7102</b> 概率论 · 课程项目</span><span>P5 员工车位</span><span>最后更新 2026-11-01</span></div>
+  <h1>车位预测项目实录</h1>
+  <p class="lede">这份文档记录项目每一步做了什么、为什么这样做、结果说明了什么。每一步都注明对应《车位预测原理》的哪一章，遇到不懂的原理回去查那一份。代码都在 <code>CarPark/Claude_work/project/</code>。</p>
+  <details class="toc"><summary>目录</summary><ol id="toc-m"></ol></details>
+</header>
+
+<div class="layout">
+<nav class="rail" aria-label="章节"><p class="ttl">章节</p><ol id="toc"></ol></nav>
+<main>
+
+<section class="ch" id="s0" data-short="进度与文件">
+<div class="ch-head"><span class="bay">00</span><div><p class="eyebrow">Status</p><h2>进度与文件</h2></div></div>
+<ol class="steps">
+  <li><span class="n">1</span><span class="d">清洗 + 重采样到 15 分钟<small>01_prepare.py</small></span><span class="pill done">完成</span></li>
+  <li><span class="n">2</span><span class="d">做特征（1 小时 / 24 小时两个步长）<small>02_features.py</small></span><span class="pill done">完成</span></li>
+  <li><span class="n">3</span><span class="d">三个基线 + 评价<small>03_baselines.py</small></span><span class="pill done">完成</span></li>
+  <li><span class="n">4</span><span class="d">Ridge 与 XGBoost 点预测<small>目标 11/4–11/8</small></span><span class="pill next">下一步</span></li>
+  <li><span class="n">5</span><span class="d">分位数 XGBoost（预测区间）<small>目标 11/8–11/10</small></span><span class="pill">待做</span></li>
+  <li><span class="n">6</span><span class="d">共形预测：固定宽度、CQR，可选 ACI<small>目标 11/10–11/12</small></span><span class="pill">待做</span></li>
+  <li><span class="n">7</span><span class="d">11–12 月模拟评估 + 分时段分析<small>目标 11/12</small></span><span class="pill">待做</span></li>
+  <li><span class="n">8</span><span class="d">写报告（11/16 截止）、做 slides（11/24 发给助教）<small>报告用英文</small></span><span class="pill">待做</span></li>
+</ol>
+
+<h3>文件结构</h3>
+<pre><code>CarPark/Claude_work/
+├── cp2023.parquet          <span class="c">原始记录（parse.py 从官方 JSON 解析出来的）</span>
+├── um_calendar_2023.csv    <span class="c">校历：每天属于教学 / 考试 / 假期，是否公众假期</span>
+├── 车位预测原理.html        <span class="c">原理讲义</span>
+├── 车位预测项目实录.html     <span class="c">本文档</span>
+└── project/
+    ├── common.py           <span class="c">路径、常量、数据切分、MAE / RMSE</span>
+    ├── 01_prepare.py       <span class="c">第 1 步</span>
+    ├── 02_features.py      <span class="c">第 2 步</span>
+    ├── 03_baselines.py     <span class="c">第 3 步</span>
+    ├── requirements.txt    <span class="c">需要的 Python 包</span>
+    ├── data/               <span class="c">中间数据（脚本自动生成）</span>
+    └── results/            <span class="c">结果表格和图（报告可以直接用）</span></code></pre>
+<div class="blk code"><span class="tag">怎么运行</span>
+<pre><code>cd project
+pip install -r requirements.txt   <span class="c"># 第一次运行前装一次</span>
+python 01_prepare.py              <span class="c"># 每一步读上一步的输出，按顺序跑</span>
+python 02_features.py
+python 03_baselines.py</code></pre>
+<p><code>common.py</code> 里有一个 <code>SPLITS</code> 列表，定义了训练 / 验证 / 校准 / 测试四段时间（原理讲义第 03 章）。以后所有脚本都从这里读，保证全组用的切分完全一致。</p>
+</div>
+</section>
+
+<!-- ============ STEP 1 ============ -->
+<section class="ch" id="s1" data-short="第 1 步 清洗">
+<div class="ch-head"><span class="bay">01</span><div><p class="eyebrow">Step 1 · 原理见第 01 章</p><h2>清洗与重采样</h2></div></div>
+<p class="goal">输入是每 5 分钟一条的原始记录（1–2 月约 8 分钟一条），输出是整齐的 15 分钟网格：一年 35,040 行 × 22 条序列（5 个停车场 × 车位类型 × 汽车 / 摩托）。</p>
+
+<h3>1.1 代码做了四件事</h3>
+<div class="blk code"><span class="tag">代码 · 01_prepare.py 核心部分</span>
+<pre><code>for name, g in raw.groupby("series"):
+    s = g.set_index("time")["available"].sort_index().astype(float)
+
+    <span class="c"># (1) 孤立尖峰：和前后共 5 个点的中位数差 &gt; 60 → 设为缺失</span>
+    med = s.rolling(5, center=True, min_periods=3).median()
+    spike = (s - med).abs() &gt; SPIKE_THRESHOLD
+    s[spike] = np.nan
+
+    <span class="c"># (2) 负数没有物理意义 → 截到 0</span>
+    s = s.clip(lower=0)
+
+    <span class="c"># (3) 重采样：每 15 分钟一格，格内取平均</span>
+    y = s.resample("15min").mean().reindex(grid)
+
+    <span class="c"># (4) 短缺口用"上一个已知值"补，最多补 2 格（30 分钟）</span>
+    y = y.ffill(limit=FFILL_LIMIT)</code></pre>
+</div>
+<div class="blk intu"><span class="tag">逐行讲解</span>
+<ul>
+<li><b>(1) 尖峰检测</b>用的是"滚动中位数"：取每个点前后各 2 个、一共 5 个点的中位数，如果这个点离中位数超过 60，就认为它是传感器故障。为什么用中位数不用平均值？第 04 章讲过，中位数不会被一个离群值带偏，平均值会。P5 员工车位只抓到 2 个尖峰：7 月 14 日 19:35 突然变成 394，19:40 变成 250，前后都在 140–150 左右。</li>
+<li><b>(2) 截到 0</b>：P5 员工车位没有负数；P2 员工车位有 19 个、P3 访客车位有 23 个负数，全部截成 0。</li>
+<li><b>(3) <code>reindex(grid)</code></b>：先建一个从 1 月 1 日 00:00 到 12 月 31 日 23:45、每 15 分钟一格的"标准网格"，再把数据对齐上去。这样每条序列的行数完全一样（35,040），没有数据的格子自动变成 NaN。</li>
+<li><b>(4) 用 <code>ffill</code>（向前填补）而不是 <code>interpolate</code>（插值）</b>：插值要用到缺口<b>后面</b>的值，等于偷看了未来（第 02 章的数据泄漏）。向前填补只用缺口之前最后一个已知值，和真实部署时的情况一致。</li>
+</ul>
+</div>
+<div class="blk pit"><span class="tag">值得说明的一点</span>
+<p>第 (1) 步的滚动中位数用了 <code>center=True</code>，也会看后面 2 个点。严格来说这也用到了"未来"。我们接受这一点，因为它只是事后剔除明显的传感器故障，在 P5 员工车位上只影响 7 月的 2 个点，对测试期没有任何影响。报告的 Methodology 里写一句即可。</p>
+</div>
+
+<h3>1.2 数据质量</h3>
+<div class="tbl"><table>
+<thead><tr><th>P5 员工汽车车位</th><th class="num">数值</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>原始记录数</td><td class="num">97,381</td><td>2023 全年</td></tr>
+<tr><td>剔除的尖峰</td><td class="num">2</td><td>7/14 19:35（394）和 19:40（250）</td></tr>
+<tr><td>截掉的负数</td><td class="num">0</td><td></td></tr>
+<tr><td>空格子（补之前）</td><td class="num">420</td><td>含 1/1 00:00–08:00（数据从 08:04 才开始）和 7/28–7/31 的缺口</td></tr>
+<tr><td>空格子（补之后）</td><td class="num">297</td><td>长缺口保留为 NaN，不乱补</td></tr>
+<tr><td>取值范围</td><td class="num">3.7 – 220</td><td>15 分钟平均后</td></tr>
+</tbody></table></div>
+
+<h3>1.3 发现一：计数器会"跳"</h3>
+<figure>
+<div class="plotbox" id="fig-jumps"></div>
+<figcaption><b>图 1.1</b> P5 员工车位在 5 分钟内变化 ≥ 40 的次数，按发生的小时统计。全年 48 次（其中 3 条来自 7/14 那个尖峰），20 次向上跳、28 次向下跳。</figcaption>
+</figure>
+<div class="blk ex"><span class="tag">一个例子 · 2023-10-11（周三）早上</span>
+<div class="tbl"><table>
+<thead><tr><th>时间</th><td class="num">08:00</td><td class="num">08:05</td><td class="num">08:10</td><td class="num">08:15</td><td class="num"><b>08:20</b></td><td class="num">08:25</td><td class="num">08:30</td><td class="num">08:45</td><td class="num">09:00</td></tr></thead>
+<tbody><tr><th>可用车位</th><td class="num">109</td><td class="num">109</td><td class="num">108</td><td class="num">106</td><td class="num"><b>172</b></td><td class="num">172</td><td class="num">170</td><td class="num">163</td><td class="num">146</td></tr></tbody></table></div>
+<p>早上 8 点是大家开车来上班的时候，车位应该一直减少。08:15 到 08:20 却突然多出 66 个，之后又从 172 开始继续减少。5 分钟内不可能有 66 辆车离开，所以这不是真实的车辆进出。当天 19:10 又出现了一次 −68 的跳变。</p>
+</div>
+<div class="blk spec"><span class="tag">推测 · 未证实</span>
+<p>跳变集中在 8 点前后和 19 点前后，看起来像是人工校正计数器，或者某个区域在早上开放、晚上关闭。我们无法从数据确认是哪一种。<b>处理方式：保留这些跳变</b>。我们预测的是"系统显示的可用车位数"，也就是司机实际看到的数字，跳变也是它的一部分。报告里可以把它列为"测量不确定性"的证据（原理讲义 8.1）。</p>
+</div>
+
+<h3>1.4 发现二：半夜的"满空"水平每天都不一样</h3>
+<figure>
+<div class="plotbox" id="fig-night"></div>
+<figcaption><b>图 1.2</b> 2023 年每天凌晨 3:00 的可用车位。半夜员工车位基本是空的，这个数本应接近总车位数并且每天一样。实际上它既有长期漂移（6 月后整体抬高约 30），又有逐日波动：相邻两天的差值中位数是 11，90% 分位数是 37。</figcaption>
+</figure>
+<div class="blk proj"><span class="tag">对后面的影响</span>
+<ul>
+<li><b>1 小时预测</b>：影响不大。模型能看到"现在是多少"（<code>lag_0</code>），水平高低已经包含在里面了。</li>
+<li><b>24 小时预测</b>：影响很大。明天半夜的水平本身就有 ±11 左右的不确定性，白天的预测不可能比这更准。这是 24 小时区间会明显更宽的原因之一，报告里值得讨论。</li>
+<li><b>只靠日历的模型会有系统偏差</b>，第 3 步的结果会直接证实这一点。</li>
+</ul>
+</div>
+</section>
+
+<!-- ============ STEP 2 ============ -->
+<section class="ch" id="s2" data-short="第 2 步 特征">
+<div class="ch-head"><span class="bay">02</span><div><p class="eyebrow">Step 2 · 原理见第 02 章</p><h2>做特征</h2></div></div>
+<p class="goal">每个预测起点 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span> 一行，生成两张表：<code>features_h4.parquet</code>（预测 1 小时后）和 <code>features_h96.parquet</code>（预测 24 小时后）。</p>
+
+<h3>2.1 特征清单</h3>
+<div class="tbl"><table>
+<thead><tr><th>特征</th><th>含义</th><th>公式</th><th class="num">H=4</th><th class="num">H=96</th></tr></thead>
+<tbody>
+<tr><td><code>lag_0, lag_1, lag_2, lag_4</code></td><td>现在、15 / 30 / 60 分钟前</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>4</mn></mrow></msub></mrow><annotation encoding="application/x-tex">y_t,\ y_{t-1},\ y_{t-2},\ y_{t-4}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>diff_1, diff_4</code></td><td>最近 15 分钟 / 1 小时的变化</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo>−</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>y</mi><mi>t</mi></msub><mo>−</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>4</mn></mrow></msub></mrow><annotation encoding="application/x-tex">y_t-y_{t-1},\ y_t-y_{t-4}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>mean_1h</code></td><td>最近 1 小时平均</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mn>4</mn></mfrac><msubsup><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>0</mn></mrow><mn>3</mn></msubsup><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\tfrac14\sum_{j=0}^{3}y_{t-j}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>min_today</code></td><td>今天到现在为止的最低值</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi>min</mi><mo>⁡</mo></mrow><mrow><mi>s</mi><mo>≤</mo><mi>t</mi><mo separator="true">,</mo><mtext> 同一天</mtext></mrow></msub><msub><mi>y</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">\min_{s\le t,\ \text{同一天}}y_s</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>yday</code></td><td>目标时刻的前一天同一时刻</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi><mo>−</mo><mn>96</mn></mrow></msub></mrow><annotation encoding="application/x-tex">y_{t+H-96}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">—</td></tr>
+<tr><td><code>lweek, lweek2</code></td><td>目标时刻的上周 / 上上周同一时刻</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi><mo>−</mo><mn>672</mn></mrow></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi><mo>−</mo><mn>1344</mn></mrow></msub></mrow><annotation encoding="application/x-tex">y_{t+H-672},\ y_{t+H-1344}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>P2/P3/P6_Staff_Car_now</code></td><td>其他停车场员工车位的现值</td><td>同一时刻 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>slot, slot_sin, slot_cos</code></td><td>目标时刻是一天中第几格</td><td><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mo separator="true">,</mo><mtext> </mtext><mi>sin</mi><mo>⁡</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mi>s</mi></mrow><mn>96</mn></mfrac><mo separator="true">,</mo><mtext> </mtext><mi>cos</mi><mo>⁡</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mi>s</mi></mrow><mn>96</mn></mfrac></mrow><annotation encoding="application/x-tex">s,\ \sin\frac{2\pi s}{96},\ \cos\frac{2\pi s}{96}</annotation></semantics></math></span></td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>dow, is_holiday, is_off</code></td><td>星期几、公众假期、休息日（周末或假期）</td><td>目标时刻那天</td><td class="num">✓</td><td class="num">✓</td></tr>
+<tr><td><code>period_group</code></td><td>教学 / 考试 / 假期</td><td>目标时刻那天的校历</td><td class="num">✓</td><td class="num">✓</td></tr>
+</tbody></table></div>
+<p class="small">为什么 H=96 没有 <code>yday</code>：它要求滞后步数 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mn>96</mn><mo>&gt;</mo><mi>H</mi><mo>=</mo><mn>96</mn></mrow><annotation encoding="application/x-tex">L=96\gt H=96</annotation></semantics></math></span>，不成立。<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mi>H</mi></mrow><annotation encoding="application/x-tex">L=H</annotation></semantics></math></span> 时 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi><mo>−</mo><mn>96</mn></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">y_{t+H-96}=y_t</annotation></semantics></math></span>，就是 <code>lag_0</code>，所以不重复放。这就是原理讲义 2.1 的合法性规则 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>≥</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">L\ge h</annotation></semantics></math></span>。</p>
+
+<h3>2.2 关键代码</h3>
+<div class="blk code"><span class="tag">代码 · 02_features.py</span>
+<pre><code><span class="c"># 季节性滞后：相对“目标时刻”往前 L 步，要求 L &gt; H</span>
+for L, name in [(96, "yday"), (672, "lweek"), (1344, "lweek2")]:
+    if L &gt; H:
+        X[name] = y.shift(L - H)            <span class="c"># 这一行拿到 y_{t+H-L}</span>
+
+<span class="c"># 日历特征用“目标时刻” t+H 的</span>
+tt = X.index + pd.Timedelta(minutes=15 * H)
+day = cal.reindex(tt.normalize())           <span class="c"># normalize() 把时间截到当天 0 点，用来查校历</span>
+X["is_off"] = ((tt.dayofweek &gt;= 5) | (X["is_holiday"] == 1)).astype(int)
+
+X["target"] = y.shift(-H)                   <span class="c"># 唯一出现“未来”的一列</span>
+X["split"]  = split_of(tt)                  <span class="c"># 按目标时刻贴 train / val / cal / test</span></code></pre>
+<p><code>min_today</code> 用的是 <code>y.groupby(y.index.date).cummin()</code>：按日期分组，组内做"累计最小值"。每一行只看当天从 0 点到这一刻的数据，所以只用了过去的值。</p>
+</div>
+
+<h3>2.3 泄漏自检</h3>
+<div class="blk code"><span class="tag">代码 · 随便挑一行，逐个对照原始序列</span>
+<pre><code>t  = pd.Timestamp("2023-11-14 09:00")      <span class="c"># 预测起点</span>
+tt = t + pd.Timedelta(minutes=15 * H)       <span class="c"># 目标时刻 10:00</span>
+r  = X.loc[t]
+r.target == y[tt]                           <span class="c"># True</span>
+r.lag_0  == y[t]                            <span class="c"># True</span>
+r.yday   == y[tt - pd.Timedelta(days=1)]    <span class="c"># True</span>
+r.lweek  == y[tt - pd.Timedelta(days=7)]    <span class="c"># True</span></code></pre>
+<p>H = 4 和 H = 96 两张表都通过了。这种"挑一行手动核对"的检查花一分钟，却能抓住 <code>shift</code> 方向写反之类的致命错误。以后改特征时都建议再跑一次。</p>
+</div>
+<div class="tbl"><table>
+<thead><tr><th>每段的行数（H = 4）</th><th class="num">train</th><th class="num">val</th><th class="num">cal</th><th class="num">test</th></tr></thead>
+<tbody><tr><td>行数</td><td class="num">24,764</td><td class="num">1,440</td><td class="num">2,976</td><td class="num">5,856</td></tr>
+<tr><td>天数（约）</td><td class="num">258</td><td class="num">15</td><td class="num">31</td><td class="num">61</td></tr></tbody></table></div>
+</section>
+
+<!-- ============ STEP 3 ============ -->
+<section class="ch" id="s3" data-short="第 3 步 基线">
+<div class="ch-head"><span class="bay">03</span><div><p class="eyebrow">Step 3 · 原理见第 04、11 章</p><h2>三个基线：定下要打败的分数</h2></div></div>
+
+<h3>3.1 三个基线怎么算</h3>
+<ul>
+<li><b>persistence（持续性）</b>：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mi>t</mi><mo>+</mo><mi>H</mi></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\hat y_{t+H}=y_t</annotation></semantics></math></span>。H = 96 时就等于"昨天同一时刻"。</li>
+<li><b>seasonal naive（季节性朴素）</b>：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mi>t</mi><mo>+</mo><mi>H</mi></mrow></msub><mo>=</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi><mo>−</mo><mn>672</mn></mrow></msub></mrow><annotation encoding="application/x-tex">\hat y_{t+H}=y_{t+H-672}</annotation></semantics></math></span>，上周同一时刻。</li>
+<li><b>profile mean（历史平均）</b>：在训练集里按"日类型 × 时刻 × 学期阶段"分组求平均。日类型 = 周一到周五各算一类，周末和公众假期合成一类 "off"。如果某个组合在训练集里没出现过，就退一步只按"日类型 × 时刻"，再不行只按"时刻"。</li>
+</ul>
+<div class="blk form"><span class="tag">两个公平性设计</span>
+<ol>
+<li><b>同一批行</b>：只在"目标值和三个预测都不缺失"的行上比较，避免某个方法因为少算了几行难预测的点而占便宜。</li>
+<li><b>两种口径</b>：<b>全天</b>和<b>白天 07:00–20:00</b>。半夜车位几乎不变，谁都能猜对，会把 MAE 拉低、掩盖白天的差距。白天口径才是司机真正关心的时段，报告里建议以它为主。</li>
+</ol>
+</div>
+
+<h3>3.2 结果</h3>
+<div class="tbl"><table id="tbl-res">
+<thead><tr><th rowspan="2">步长</th><th rowspan="2">口径</th><th rowspan="2">方法</th><th class="num" colspan="2">验证集 9/16–9/30</th><th class="num" colspan="2">测试集 11–12 月</th></tr>
+<tr><th class="num">MAE</th><th class="num">RMSE</th><th class="num">MAE</th><th class="num">RMSE</th></tr></thead>
+<tbody></tbody></table></div>
+<p class="small">单位：车位。★ 表示同一组（同一步长、同一口径）里 MAE 最低的方法。</p>
+
+<figure>
+<div class="ctrls">
+<div class="seg" role="radiogroup" aria-label="预测步长">
+<input type="radio" name="wh" id="wh4" value="4" checked><label for="wh4">提前 1 小时</label>
+<input type="radio" name="wh" id="wh96" value="96"><label for="wh96">提前 24 小时</label>
+</div>
+<div class="chk">
+<label for="sh-p"><input type="checkbox" id="sh-p" checked> persistence</label>
+<label for="sh-s"><input type="checkbox" id="sh-s" checked> seasonal naive</label>
+<label for="sh-m"><input type="checkbox" id="sh-m" checked> profile mean</label>
+</div>
+</div>
+<div class="plotbox" id="fig-week"></div>
+<ul class="key"><li><span class="sw" style="background:var(--ink)"></span>真实值</li><li><span class="sw"></span>persistence</li><li><span class="sw s2"></span>seasonal naive</li><li><span class="sw s3"></span>profile mean</li></ul>
+<figcaption><b>图 3.1</b> 测试期里的一个教学周（2023-11-13 周一 到 11-19 周日）。可以切换步长，也可以勾选要看的方法。同一张图的英文版在 <code>results/fig_baselines_test_week.png</code>，报告里可以直接用。</figcaption>
+</figure>
+
+<h3>3.3 测试集按时段拆开（白天口径 MAE）</h3>
+<div class="tbl"><table id="tbl-reg">
+<thead><tr><th>步长</th><th>方法</th><th class="num">教学周工作日</th><th class="num">考试期工作日</th><th class="num">假期工作日</th><th class="num">周末 / 公众假期</th></tr></thead>
+<tbody></tbody></table></div>
+<p class="small">"假期工作日"在测试期里就是 12/17–12/31 圣诞假期的工作日。</p>
+
+<h3>3.4 结果说明了什么</h3>
+<div class="blk ex"><span class="tag">发现 1 · 1 小时预测时，"未来 = 现在"非常强</span>
+<p>persistence 的测试集 MAE 全天 6.50、白天 11.22。原因是 15 分钟自相关 0.99、1 小时自相关 0.93（原理讲义 1.3）。XGBoost 在 1 小时步长上的任务，就是证明它能比"直接抄现在的值"更好，尤其是在早上 8–9 点、傍晚 18 点车位快速变化的时候。</p>
+</div>
+<div class="blk ex"><span class="tag">发现 2 · 只靠日历的历史平均有 +27 的系统偏差</span>
+<p>计算"真实值 − profile mean"的平均值：训练集 −0.5，验证集 <b>+30.6</b>，测试集 <b>+27.0</b>。在训练集上几乎没有偏差，换到下半年就整体低估了约 30 个车位，正好对应第 1 步发现的"6 月后水平抬高约 30"。这直接证明了<b>分布漂移</b>的存在。所以 profile mean 在每个时段都差（MAE 27–29），只有假期工作日例外。也说明后面的模型<b>必须</b>用到滞后特征。</p>
+</div>
+<div class="blk ex"><span class="tag">发现 3 · 上周的模式在"换季"时失灵</span>
+<p>seasonal naive 在验证集上 MAE 12.67，到了测试集变成 21.66。拆开看：教学周 16.17（不错），假期工作日 <b>34.18</b>（很差）。原因是圣诞假期第一周的"上周"是考试周，模式完全不同。同理，12/8、12/20 这类公众假期的"上周同一天"是正常工作日。</p>
+<p>还有一个有意思的地方：1 小时步长、教学周工作日这一格，seasonal naive（16.17）<b>比 persistence（18.29）还好</b>。说明"最近的值"和"上周同一时刻"包含互补的信息，XGBoost 把两者结合起来应该能明显变好。</p>
+</div>
+<div class="blk ex"><span class="tag">发现 4 · 24 小时预测难得多</span>
+<p>H = 96 时最好的基线是 seasonal naive（白天测试 MAE 21.08）。persistence 变成"昨天同一时刻"，在周五→周六、周日→周一这种交界处错得很离谱（图 3.1 切到 24 小时可以看到），白天 MAE 25.86。再加上第 1 步发现的逐日水平波动，24 小时的不确定性天然更大。</p>
+</div>
+
+<div class="score">
+<div><span>1 小时 · 白天 · 要打败的 MAE</span><b>13.19 / 11.22</b><span>验证 / 测试（persistence）</span></div>
+<div><span>24 小时 · 白天 · 要打败的 MAE</span><b>13.20 / 21.08</b><span>验证 / 测试（seasonal naive）</span></div>
+</div>
+<div class="blk pit"><span class="tag">纪律 · 测试集只用来"汇报"，不用来"选择"</span>
+<p>基线没有任何需要调的东西，所以现在看测试集结果没问题。从第 4 步开始，<b>所有选择</b>（用哪些特征、树多深、学习率多少、Ridge 的 λ）都只看验证集。测试集只在最后跑一次、写进报告。否则测试结果会偏乐观，原理和第 03 章说的"考前偷看答案"一样。</p>
+</div>
+</section>
+
+<!-- ============ NEXT ============ -->
+<section class="ch" id="s4" data-short="下一步">
+<div class="ch-head"><span class="bay">04</span><div><p class="eyebrow">Next · 原理见第 05、07 章</p><h2>下一步：Ridge 与 XGBoost</h2></div></div>
+<div class="blk intu"><span class="tag">一个关键的设计选择：预测"变化量"而不是"绝对值"</span>
+<p>第 1 步和第 3 步都说明：车位的整体水平会漂移，训练集（上半年 ~120）和测试集（下半年 ~155）不一样。树模型的输出是叶子里训练样本的平均值，<b>不会外推</b>到训练集没见过的水平。</p>
+<p>办法是把标签换成"相对现在变了多少"：</p>
+<div class="eq"><span class="katex-display"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi mathvariant="normal">Δ</mi><mi>t</mi></msub><mo>=</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>+</mo><mi>H</mi></mrow></msub><mo>−</mo><msub><mi>y</mi><mi>t</mi></msub><mo separator="true">,</mo><mspace width="2em"/><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mi>t</mi><mo>+</mo><mi>H</mi></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>t</mi></msub><mo>+</mo><msub><mover accent="true"><mi mathvariant="normal">Δ</mi><mo>^</mo></mover><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\Delta_{t}=y_{t+H}-y_t,\qquad \hat y_{t+H}=y_t+\hat\Delta_t</annotation></semantics></math></span></span></div>
+<p>"工作日早上 9 点到 10 点车位会减少二三十个"这个规律，不管整体水平是 120 还是 155 都差不多成立，所以变化量对漂移不敏感。第 4 步会把两种做法都在验证集上比一比，用数据说话。</p>
+</div>
+<div class="blk proj"><span class="tag">第 4 步的计划</span>
+<ol>
+<li>Ridge（独热编码 + 标准化），λ 在验证集上选。</li>
+<li>XGBoost，分别预测绝对值和变化量，用验证集早停。</li>
+<li>对比基线，看特征重要性：1 小时和 24 小时各自最依赖什么。</li>
+<li>结果和代码继续补充到这份文档里。</li>
+</ol>
+</div>
+<div class="blk proj"><span class="tag">报告可以直接用的素材（目前）</span>
+<ul>
+<li><b>Methodology / Data</b>：1.1 的清洗步骤和 1.2 的数据质量表。</li>
+<li><b>Results</b>：<code>results/baselines.csv</code>（表 3.2）、<code>results/baselines_by_period.csv</code>（表 3.3）、<code>results/fig_baselines_test_week.png</code>（图 3.1 的英文版）。</li>
+<li><b>Discussion</b>：发现 2（分布漂移，有量化证据）和 1.3 的计数器跳变（测量不确定性）。</li>
+</ul>
+</div>
+</section>
+
+<p class="endnote">本文档由 Claude（Anthropic）根据项目代码和运行结果编写，所有数字都来自 <code>project/results/</code> 里的文件。按课程要求，报告中需注明生成式 AI 的使用方式。</p>
+</main>
+</div>
+</div>
+
+<script>
+const DATA = {"w4": {"target": [160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 159.7, 159.0, 159.0, 156.3, 151.0, 143.0, 136.7, 127.0, 115.7, 94.0, 94.0, 81.7, 80.3, 79.0, 79.3, 79.0, 64.0, 59.7, 60.0, 60.0, 63.3, 66.7, 71.7, 73.3, 79.3, 77.3, 73.3, 71.0, 66.3, 54.7, 42.0, 34.7, 63.7, 64.0, 57.7, 56.7, 56.7, 59.7, 60.3, 60.7, 61.0, 64.7, 80.0, 92.3, 119.0, 138.0, 143.0, 148.7, 152.3, 153.7, 155.3, 155.7, 156.0, 156.0, 156.0, 156.7, 156.3, 157.0, 157.0, 157.7, 159.7, 161.3, 163.7, 164.0, 163.3, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 164.0, 164.0, 178.3, 173.7, 161.7, 153.3, 138.0, 137.0, 115.3, 108.3, 105.0, 97.3, 96.0, 97.7, 98.7, 85.0, 77.7, 76.7, 75.7, 77.3, 81.3, 91.7, 93.0, 99.7, 103.0, 101.3, 98.0, 93.0, 80.7, 68.7, 61.0, 61.3, 50.0, 48.0, 48.3, 49.0, 49.3, 51.3, 51.0, 54.0, 61.0, 74.0, 103.0, 130.7, 147.3, 147.7, 148.7, 139.3, 139.3, 134.7, 136.0, 136.0, 136.0, 136.0, 136.0, 136.7, 137.0, 137.7, 140.7, 140.7, 143.3, 145.0, 145.0, 145.0, 144.7, 144.7, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 144.3, 144.0, 147.3, 154.0, 149.0, 143.7, 137.7, 144.0, 119.3, 119.3, 116.7, 108.7, 107.3, 77.3, 77.0, 80.3, 82.0, 81.3, 81.3, 85.0, 90.0, 97.7, 105.5, 114.0, 117.7, 113.0, 109.3, 102.7, 95.0, 91.3, 87.3, 88.3, 97.7, 97.7, 98.0, 101.0, 101.3, 99.3, 98.7, 102.3, 110.0, 116.7, 131.7, 150.7, 165.0, 178.7, 181.3, 175.3, 179.3, 181.0, 182.0, 182.3, 183.3, 184.3, 185.3, 186.0, 186.0, 186.0, 186.0, 185.3, 189.0, 189.0, 189.0, 189.0, 189.0, 189.0, 190.7, 191.0, 191.0, 191.0, 191.0, 191.0, 191.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 191.0, 191.0, 195.0, 204.0, 196.0, 183.0, 156.3, 138.0, 120.0, 107.7, 102.0, 98.0, 97.0, 95.3, 79.0, 76.0, 71.0, 71.0, 74.0, 78.0, 80.3, 86.3, 93.0, 101.7, 104.3, 103.7, 101.3, 92.7, 86.3, 81.0, 74.3, 72.0, 71.7, 71.7, 72.7, 72.0, 74.0, 74.0, 75.0, 75.7, 79.7, 82.7, 95.3, 122.0, 139.3, 147.7, 127.0, 135.0, 134.3, 134.0, 135.0, 135.0, 135.7, 136.0, 137.0, 138.0, 139.0, 138.0, 139.7, 138.0, 140.0, 140.0, 139.3, 140.0, 141.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 141.7, 140.0, 137.3, 147.7, 146.7, 132.7, 161.7, 144.7, 125.3, 115.0, 111.0, 105.7, 101.0, 100.3, 101.0, 101.3, 85.7, 87.0, 87.7, 89.3, 96.3, 91.3, 93.0, 98.3, 95.3, 91.3, 87.3, 84.0, 76.7, 71.7, 71.3, 70.7, 72.7, 73.3, 74.0, 75.3, 76.0, 76.3, 79.7, 88.0, 99.3, 117.7, 133.0, 141.7, 151.7, 153.7, 157.3, 161.3, 164.7, 169.0, 171.0, 171.0, 171.3, 172.7, 173.0, 173.0, 173.7, 174.7, 174.3, 175.3, 176.0, 176.0, 175.3, 176.0, 176.0, 176.0, 176.0, 176.0, 176.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 176.7, 176.0, 175.0, 173.7, 172.0, 171.3, 170.0, 170.0, 170.0, 168.3, 168.0, 167.0, 167.3, 168.0, 158.3, 159.7, 161.0, 159.7, 160.0, 161.3, 161.0, 161.7, 162.0, 163.0, 163.0, 162.3, 161.0, 160.3, 160.0, 160.3, 159.3, 159.0, 159.0, 158.3, 158.7, 160.0, 159.3, 159.3, 159.0, 162.3, 163.7, 163.7, 164.0, 164.0, 164.0, 164.7, 164.7, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 163.7, 163.0, 162.7, 162.0, 161.7, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 161.0, 161.0, 161.0, 160.3, 158.3, 156.3, 155.3, 154.7, 154.0, 149.7, 159.0, 165.0, 162.7, 161.7, 161.0, 161.0, 161.3, 163.0, 165.3, 169.7, 172.7, 177.3, 179.0, 179.7, 179.0, 180.0, 182.3, 181.7, 182.0, 181.7, 182.7, 183.7, 184.0, 184.0, 184.3, 184.0, 184.0, 184.0, 184.0, 185.0, 188.0, 187.0, 187.0, 187.0, 187.0, 187.3, 187.0, 187.0, 188.0, 188.0, 188.0, 188.0, 188.0, 188.7, 189.0, 189.0, 189.0, 189.0, 189.3, 189.0, 189.0, 190.0, 190.3, 191.0, 191.0, 191.0, 190.3, 190.7, 191.0, 191.0, 191.0], "persistence": [160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 159.7, 159.0, 159.0, 156.3, 151.0, 143.0, 136.7, 127.0, 115.7, 94.0, 94.0, 81.7, 80.3, 79.0, 79.3, 79.0, 64.0, 59.7, 60.0, 60.0, 63.3, 66.7, 71.7, 73.3, 79.3, 77.3, 73.3, 71.0, 66.3, 54.7, 42.0, 34.7, 63.7, 64.0, 57.7, 56.7, 56.7, 59.7, 60.3, 60.7, 61.0, 64.7, 80.0, 92.3, 119.0, 138.0, 143.0, 148.7, 152.3, 153.7, 155.3, 155.7, 156.0, 156.0, 156.0, 156.7, 156.3, 157.0, 157.0, 157.7, 159.7, 161.3, 163.7, 164.0, 163.3, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 164.0, 164.0, 178.3, 173.7, 161.7, 153.3, 138.0, 137.0, 115.3, 108.3, 105.0, 97.3, 96.0, 97.7, 98.7, 85.0, 77.7, 76.7, 75.7, 77.3, 81.3, 91.7, 93.0, 99.7, 103.0, 101.3, 98.0, 93.0, 80.7, 68.7, 61.0, 61.3, 50.0, 48.0, 48.3, 49.0, 49.3, 51.3, 51.0, 54.0, 61.0, 74.0, 103.0, 130.7, 147.3, 147.7, 148.7, 139.3, 139.3, 134.7, 136.0, 136.0, 136.0, 136.0, 136.0, 136.7, 137.0, 137.7, 140.7, 140.7, 143.3, 145.0, 145.0, 145.0, 144.7, 144.7, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 144.3, 144.0, 147.3, 154.0, 149.0, 143.7, 137.7, 144.0, 119.3, 119.3, 116.7, 108.7, 107.3, 77.3, 77.0, 80.3, 82.0, 81.3, 81.3, 85.0, 90.0, 97.7, 105.5, 114.0, 117.7, 113.0, 109.3, 102.7, 95.0, 91.3, 87.3, 88.3, 97.7, 97.7, 98.0, 101.0, 101.3, 99.3, 98.7, 102.3, 110.0, 116.7, 131.7, 150.7, 165.0, 178.7, 181.3, 175.3, 179.3, 181.0, 182.0, 182.3, 183.3, 184.3, 185.3, 186.0, 186.0, 186.0, 186.0, 185.3, 189.0, 189.0, 189.0, 189.0, 189.0, 189.0, 190.7, 191.0, 191.0, 191.0, 191.0, 191.0, 191.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 191.0, 191.0, 195.0, 204.0, 196.0, 183.0, 156.3, 138.0, 120.0, 107.7, 102.0, 98.0, 97.0, 95.3, 79.0, 76.0, 71.0, 71.0, 74.0, 78.0, 80.3, 86.3, 93.0, 101.7, 104.3, 103.7, 101.3, 92.7, 86.3, 81.0, 74.3, 72.0, 71.7, 71.7, 72.7, 72.0, 74.0, 74.0, 75.0, 75.7, 79.7, 82.7, 95.3, 122.0, 139.3, 147.7, 127.0, 135.0, 134.3, 134.0, 135.0, 135.0, 135.7, 136.0, 137.0, 138.0, 139.0, 138.0, 139.7, 138.0, 140.0, 140.0, 139.3, 140.0, 141.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 141.7, 140.0, 137.3, 147.7, 146.7, 132.7, 161.7, 144.7, 125.3, 115.0, 111.0, 105.7, 101.0, 100.3, 101.0, 101.3, 85.7, 87.0, 87.7, 89.3, 96.3, 91.3, 93.0, 98.3, 95.3, 91.3, 87.3, 84.0, 76.7, 71.7, 71.3, 70.7, 72.7, 73.3, 74.0, 75.3, 76.0, 76.3, 79.7, 88.0, 99.3, 117.7, 133.0, 141.7, 151.7, 153.7, 157.3, 161.3, 164.7, 169.0, 171.0, 171.0, 171.3, 172.7, 173.0, 173.0, 173.7, 174.7, 174.3, 175.3, 176.0, 176.0, 175.3, 176.0, 176.0, 176.0, 176.0, 176.0, 176.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 176.7, 176.0, 175.0, 173.7, 172.0, 171.3, 170.0, 170.0, 170.0, 168.3, 168.0, 167.0, 167.3, 168.0, 158.3, 159.7, 161.0, 159.7, 160.0, 161.3, 161.0, 161.7, 162.0, 163.0, 163.0, 162.3, 161.0, 160.3, 160.0, 160.3, 159.3, 159.0, 159.0, 158.3, 158.7, 160.0, 159.3, 159.3, 159.0, 162.3, 163.7, 163.7, 164.0, 164.0, 164.0, 164.7, 164.7, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 163.7, 163.0, 162.7, 162.0, 161.7, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 161.0, 161.0, 161.0, 160.3, 158.3, 156.3, 155.3, 154.7, 154.0, 149.7, 159.0, 165.0, 162.7, 161.7, 161.0, 161.0, 161.3, 163.0, 165.3, 169.7, 172.7, 177.3, 179.0, 179.7, 179.0, 180.0, 182.3, 181.7, 182.0, 181.7, 182.7, 183.7, 184.0, 184.0, 184.3, 184.0, 184.0, 184.0, 184.0, 185.0, 188.0, 187.0, 187.0, 187.0, 187.0, 187.3, 187.0, 187.0, 188.0, 188.0, 188.0, 188.0, 188.0, 188.7, 189.0, 189.0, 189.0, 189.0, 189.3, 189.0, 189.0, 190.0, 190.3, 191.0, 191.0, 191.0, 190.3], "seasonal_naive": [179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 178.0, 177.3, 174.0, 168.7, 160.3, 154.0, 144.7, 127.0, 104.3, 104.3, 102.7, 97.0, 93.7, 86.7, 84.7, 85.0, 81.7, 84.0, 85.0, 85.7, 89.3, 91.7, 95.7, 96.3, 94.7, 95.3, 91.0, 86.7, 73.0, 58.0, 54.0, 53.3, 54.7, 54.7, 55.7, 56.3, 56.3, 57.0, 57.0, 58.0, 64.0, 77.0, 95.3, 122.3, 136.0, 151.3, 147.3, 130.0, 129.3, 133.0, 135.0, 136.0, 136.0, 136.0, 137.0, 137.0, 137.0, 137.7, 139.0, 139.3, 141.7, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 141.0, 140.7, 136.7, 133.0, 137.3, 151.0, 142.0, 126.7, 110.0, 114.0, 99.7, 94.0, 94.0, 91.0, 85.7, 83.7, 83.3, 83.0, 81.3, 81.3, 88.0, 91.3, 93.0, 96.3, 99.0, 97.0, 95.0, 91.7, 84.0, 81.7, 80.0, 70.7, 56.7, 58.7, 58.7, 57.7, 57.0, 58.0, 58.3, 62.7, 66.3, 73.3, 93.7, 113.3, 127.7, 135.7, 140.7, 138.0, 139.3, 127.7, 110.3, 111.3, 111.0, 111.0, 111.3, 111.7, 111.3, 112.3, 113.0, 114.0, 115.0, 116.0, 116.3, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 116.3, 116.0, 113.3, 151.7, 167.7, 160.0, 147.0, 138.3, 115.3, 105.3, 108.3, 89.7, 84.7, 86.3, 86.0, 85.0, 85.3, 85.0, 86.3, 88.7, 92.0, 94.3, 108.3, 127.0, 132.0, 134.0, 128.7, 124.7, 120.7, 113.3, 114.0, 115.0, 113.7, 114.7, 113.0, 114.0, 117.3, 120.3, 119.7, 119.3, 124.7, 130.7, 139.0, 161.0, 174.7, 189.7, 172.7, 125.0, 127.0, 128.7, 129.0, 130.0, 130.7, 131.3, 130.3, 133.3, 134.0, 134.0, 134.0, 134.0, 134.0, 134.7, 136.0, 136.3, 137.0, 137.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 138.0, 137.7, 139.0, 150.3, 149.0, 143.0, 131.3, 123.7, 103.3, 98.7, 94.0, 92.7, 92.3, 91.0, 90.7, 88.3, 83.0, 81.3, 82.7, 83.7, 86.7, 91.7, 93.3, 99.7, 100.3, 100.7, 94.3, 89.3, 78.3, 62.0, 58.3, 59.3, 60.0, 56.7, 56.3, 59.0, 61.0, 61.0, 61.3, 63.3, 67.3, 81.0, 95.7, 119.7, 130.3, 136.7, 131.3, 131.3, 136.0, 139.0, 114.3, 114.7, 114.0, 114.0, 114.3, 115.3, 114.3, 117.0, 121.3, 122.3, 123.3, 124.0, 124.0, 124.0, 141.3, 159.0, 141.0, 141.7, 142.0, 142.7, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 142.0, 142.0, 139.3, 135.7, 133.3, 128.7, 119.7, 115.7, 93.3, 81.7, 85.7, 81.7, 71.0, 70.0, 70.0, 68.0, 63.0, 60.7, 60.3, 62.7, 68.7, 71.3, 71.3, 76.0, 82.7, 80.7, 77.3, 66.0, 60.7, 55.0, 50.3, 47.3, 46.7, 49.0, 49.0, 49.3, 48.0, 47.7, 47.7, 54.7, 72.0, 86.7, 102.3, 119.0, 126.0, 126.7, 114.3, 109.7, 110.3, 113.7, 114.7, 115.0, 115.0, 116.0, 117.3, 118.0, 118.0, 116.7, 116.3, 116.7, 117.0, 125.0, 125.0, 126.0, 126.0, 125.3, 126.0, 126.0, 125.3, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 135.3, 157.0, 155.7, 155.0, 155.0, 154.3, 152.7, 147.3, 140.0, 140.0, 140.0, 140.0, 139.3, 139.3, 139.0, 139.7, 141.3, 140.7, 141.0, 140.7, 140.0, 141.0, 143.7, 141.3, 141.0, 140.0, 140.0, 128.0, 102.3, 102.0, 102.3, 101.7, 101.0, 101.3, 102.3, 102.0, 102.0, 102.0, 137.3, 138.0, 138.7, 139.3, 140.3, 140.3, 141.0, 141.0, 141.7, 142.7, 143.0, 144.0, 143.3, 142.0, 142.0, 143.0, 143.0, 143.7, 146.3, 148.0, 148.0, 148.3, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.3, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 152.3, 159.0, 158.7, 157.3, 155.3, 155.0, 155.0, 155.0, 154.0, 154.0, 153.7, 152.0, 152.7, 153.0, 153.0, 153.0, 153.0, 152.0, 151.0, 151.7, 152.0, 152.0, 152.3, 154.0, 154.0, 152.3, 151.0, 151.0, 151.0, 150.0, 148.7, 146.0, 146.0, 138.3, 133.7, 133.7, 134.0, 135.3, 136.0, 136.0, 136.0, 137.3, 140.0, 146.7, 154.7, 156.0, 156.0, 156.0, 158.7, 159.0, 159.0, 158.3, 157.3, 158.0, 158.0, 158.0, 158.0, 158.0, 159.0, 159.0, 159.7, 160.0, 160.0, 160.0, 160.0], "profile_mean": [128.1, 128.1, 128.3, 128.1, 128.0, 127.9, 127.5, 127.6, 127.7, 127.7, 127.7, 127.7, 127.7, 127.7, 127.7, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.9, 127.8, 127.8, 127.8, 127.8, 127.4, 126.6, 125.8, 124.6, 122.5, 117.5, 111.8, 104.1, 95.3, 87.2, 81.2, 70.9, 62.8, 56.1, 53.3, 53.4, 52.5, 50.4, 46.3, 44.6, 45.2, 50.2, 52.9, 53.8, 59.0, 63.2, 61.4, 59.3, 55.3, 45.6, 37.1, 33.5, 32.9, 34.2, 33.5, 30.2, 34.8, 38.1, 39.6, 41.2, 43.0, 47.8, 58.2, 72.8, 92.1, 104.3, 108.8, 104.9, 109.3, 113.8, 113.6, 112.0, 112.1, 112.5, 112.5, 113.0, 113.5, 114.0, 114.8, 116.7, 121.1, 124.7, 127.3, 128.0, 128.1, 128.3, 128.2, 128.3, 128.2, 128.3, 128.4, 129.2, 128.5, 128.8, 129.2, 129.2, 129.8, 130.3, 130.3, 130.3, 130.2, 129.8, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 130.3, 131.0, 130.6, 130.1, 129.6, 129.1, 128.3, 123.2, 115.0, 106.4, 96.0, 86.2, 78.7, 71.5, 65.9, 60.8, 57.6, 55.6, 54.2, 50.6, 47.0, 45.9, 46.8, 51.4, 56.6, 55.8, 58.7, 59.8, 58.8, 53.6, 49.6, 41.2, 36.2, 32.8, 32.1, 33.5, 32.7, 31.6, 33.7, 35.8, 37.4, 38.8, 40.8, 44.1, 54.6, 71.9, 91.2, 105.1, 109.1, 101.4, 102.3, 104.0, 103.9, 102.5, 102.9, 103.5, 104.3, 105.2, 106.2, 106.8, 107.4, 107.6, 109.1, 112.7, 113.1, 113.2, 113.3, 113.4, 114.7, 115.3, 115.4, 115.5, 115.5, 113.0, 115.0, 114.9, 115.9, 115.9, 115.8, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.7, 116.9, 116.5, 118.6, 126.8, 125.3, 121.6, 114.5, 106.3, 98.3, 90.9, 83.4, 79.0, 75.8, 75.4, 72.8, 70.5, 69.5, 69.0, 68.9, 70.9, 76.9, 81.4, 86.0, 89.7, 91.6, 90.8, 87.7, 84.1, 80.7, 78.0, 74.9, 74.5, 77.2, 78.4, 78.5, 79.2, 81.1, 82.8, 84.0, 86.5, 90.3, 95.0, 102.7, 120.0, 128.9, 137.4, 131.8, 128.5, 126.4, 124.2, 123.4, 124.3, 125.0, 125.4, 126.0, 126.8, 126.4, 126.6, 127.5, 128.5, 130.3, 131.6, 132.0, 133.0, 133.2, 133.8, 133.8, 133.9, 134.0, 133.2, 131.6, 131.7, 131.6, 133.1, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.8, 133.8, 133.8, 133.8, 133.8, 133.8, 133.7, 133.6, 133.2, 132.4, 131.6, 129.1, 128.8, 124.3, 119.0, 110.6, 102.0, 92.4, 83.3, 75.1, 70.2, 65.5, 60.2, 58.9, 57.0, 53.7, 52.8, 51.4, 51.7, 57.7, 61.9, 63.4, 65.2, 70.1, 68.4, 64.0, 59.4, 51.5, 43.9, 39.7, 39.0, 40.3, 40.0, 38.7, 41.1, 43.8, 46.6, 48.2, 51.1, 56.0, 64.4, 79.1, 97.2, 107.9, 115.3, 116.5, 115.8, 116.3, 114.3, 110.9, 111.1, 111.5, 111.9, 112.2, 113.0, 113.9, 114.6, 115.7, 118.1, 122.2, 122.7, 122.9, 123.4, 124.3, 125.0, 126.3, 128.5, 129.0, 130.6, 131.1, 131.0, 131.4, 131.8, 131.9, 132.0, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.2, 132.5, 132.2, 131.7, 130.9, 127.9, 128.9, 124.6, 117.1, 106.1, 92.8, 86.7, 80.0, 72.0, 69.0, 66.4, 63.6, 61.8, 59.9, 57.4, 55.6, 55.8, 58.5, 64.5, 69.9, 73.7, 75.9, 77.8, 76.4, 73.0, 68.7, 60.6, 55.6, 50.7, 51.2, 52.3, 52.6, 51.5, 50.7, 50.8, 52.0, 53.5, 57.4, 69.2, 80.6, 100.0, 108.9, 112.9, 115.9, 114.7, 114.4, 114.6, 113.2, 112.4, 113.2, 112.9, 114.0, 114.7, 115.1, 115.5, 117.0, 117.5, 118.9, 121.7, 122.8, 123.2, 123.5, 123.8, 124.2, 124.6, 124.0, 125.1, 125.3, 125.4, 125.5, 125.7, 125.8, 125.9, 125.9, 126.0, 126.0, 126.0, 125.2, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.2, 125.2, 125.7, 126.1, 128.9, 128.8, 128.2, 127.2, 126.3, 125.6, 124.9, 124.3, 123.9, 123.4, 123.0, 122.6, 121.8, 121.8, 120.9, 120.6, 120.8, 121.0, 121.0, 121.0, 121.0, 121.2, 120.4, 119.8, 118.7, 117.3, 116.6, 116.7, 116.0, 115.5, 114.5, 113.7, 113.6, 113.7, 113.8, 114.1, 114.6, 115.2, 115.7, 118.2, 119.7, 121.0, 121.7, 122.2, 122.8, 123.9, 124.5, 124.9, 125.1, 124.7, 124.5, 124.6, 124.6, 124.6, 124.6, 124.6, 125.1, 125.2, 125.3, 125.3, 125.4, 125.3, 125.4, 125.4, 124.0, 125.1, 125.3, 125.4, 125.5, 125.7, 125.8, 125.9, 125.9, 126.0, 126.0, 126.0, 125.2, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.2, 125.2, 125.7, 126.1, 128.9, 128.8, 128.2, 127.2, 126.3, 125.6, 124.9, 124.3, 123.9, 123.4, 123.0, 122.6, 121.8, 121.8, 120.9, 120.6, 120.8, 121.0, 121.0, 121.0, 121.0, 121.2, 120.4, 119.8, 118.7, 117.3, 116.6, 116.7, 116.0, 115.5, 114.5, 113.7, 113.6, 113.7, 113.8, 114.1, 114.6, 115.2, 115.7, 118.2, 119.7, 121.0, 121.7, 122.2, 122.8, 123.9, 124.5, 124.9, 125.1, 124.7, 124.5, 124.6, 124.6, 124.6, 124.6, 124.6, 125.1, 125.2, 125.3, 125.3, 125.4, 125.3, 125.4, 125.4]}, "w96": {"target": [160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 159.7, 159.0, 159.0, 156.3, 151.0, 143.0, 136.7, 127.0, 115.7, 94.0, 94.0, 81.7, 80.3, 79.0, 79.3, 79.0, 64.0, 59.7, 60.0, 60.0, 63.3, 66.7, 71.7, 73.3, 79.3, 77.3, 73.3, 71.0, 66.3, 54.7, 42.0, 34.7, 63.7, 64.0, 57.7, 56.7, 56.7, 59.7, 60.3, 60.7, 61.0, 64.7, 80.0, 92.3, 119.0, 138.0, 143.0, 148.7, 152.3, 153.7, 155.3, 155.7, 156.0, 156.0, 156.0, 156.7, 156.3, 157.0, 157.0, 157.7, 159.7, 161.3, 163.7, 164.0, 163.3, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 164.0, 164.0, 178.3, 173.7, 161.7, 153.3, 138.0, 137.0, 115.3, 108.3, 105.0, 97.3, 96.0, 97.7, 98.7, 85.0, 77.7, 76.7, 75.7, 77.3, 81.3, 91.7, 93.0, 99.7, 103.0, 101.3, 98.0, 93.0, 80.7, 68.7, 61.0, 61.3, 50.0, 48.0, 48.3, 49.0, 49.3, 51.3, 51.0, 54.0, 61.0, 74.0, 103.0, 130.7, 147.3, 147.7, 148.7, 139.3, 139.3, 134.7, 136.0, 136.0, 136.0, 136.0, 136.0, 136.7, 137.0, 137.7, 140.7, 140.7, 143.3, 145.0, 145.0, 145.0, 144.7, 144.7, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 144.3, 144.0, 147.3, 154.0, 149.0, 143.7, 137.7, 144.0, 119.3, 119.3, 116.7, 108.7, 107.3, 77.3, 77.0, 80.3, 82.0, 81.3, 81.3, 85.0, 90.0, 97.7, 105.5, 114.0, 117.7, 113.0, 109.3, 102.7, 95.0, 91.3, 87.3, 88.3, 97.7, 97.7, 98.0, 101.0, 101.3, 99.3, 98.7, 102.3, 110.0, 116.7, 131.7, 150.7, 165.0, 178.7, 181.3, 175.3, 179.3, 181.0, 182.0, 182.3, 183.3, 184.3, 185.3, 186.0, 186.0, 186.0, 186.0, 185.3, 189.0, 189.0, 189.0, 189.0, 189.0, 189.0, 190.7, 191.0, 191.0, 191.0, 191.0, 191.0, 191.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 191.0, 191.0, 195.0, 204.0, 196.0, 183.0, 156.3, 138.0, 120.0, 107.7, 102.0, 98.0, 97.0, 95.3, 79.0, 76.0, 71.0, 71.0, 74.0, 78.0, 80.3, 86.3, 93.0, 101.7, 104.3, 103.7, 101.3, 92.7, 86.3, 81.0, 74.3, 72.0, 71.7, 71.7, 72.7, 72.0, 74.0, 74.0, 75.0, 75.7, 79.7, 82.7, 95.3, 122.0, 139.3, 147.7, 127.0, 135.0, 134.3, 134.0, 135.0, 135.0, 135.7, 136.0, 137.0, 138.0, 139.0, 138.0, 139.7, 138.0, 140.0, 140.0, 139.3, 140.0, 141.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 141.7, 140.0, 137.3, 147.7, 146.7, 132.7, 161.7, 144.7, 125.3, 115.0, 111.0, 105.7, 101.0, 100.3, 101.0, 101.3, 85.7, 87.0, 87.7, 89.3, 96.3, 91.3, 93.0, 98.3, 95.3, 91.3, 87.3, 84.0, 76.7, 71.7, 71.3, 70.7, 72.7, 73.3, 74.0, 75.3, 76.0, 76.3, 79.7, 88.0, 99.3, 117.7, 133.0, 141.7, 151.7, 153.7, 157.3, 161.3, 164.7, 169.0, 171.0, 171.0, 171.3, 172.7, 173.0, 173.0, 173.7, 174.7, 174.3, 175.3, 176.0, 176.0, 175.3, 176.0, 176.0, 176.0, 176.0, 176.0, 176.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 176.7, 176.0, 175.0, 173.7, 172.0, 171.3, 170.0, 170.0, 170.0, 168.3, 168.0, 167.0, 167.3, 168.0, 158.3, 159.7, 161.0, 159.7, 160.0, 161.3, 161.0, 161.7, 162.0, 163.0, 163.0, 162.3, 161.0, 160.3, 160.0, 160.3, 159.3, 159.0, 159.0, 158.3, 158.7, 160.0, 159.3, 159.3, 159.0, 162.3, 163.7, 163.7, 164.0, 164.0, 164.0, 164.7, 164.7, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 163.7, 163.0, 162.7, 162.0, 161.7, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 162.0, 161.0, 161.0, 161.0, 160.3, 158.3, 156.3, 155.3, 154.7, 154.0, 149.7, 159.0, 165.0, 162.7, 161.7, 161.0, 161.0, 161.3, 163.0, 165.3, 169.7, 172.7, 177.3, 179.0, 179.7, 179.0, 180.0, 182.3, 181.7, 182.0, 181.7, 182.7, 183.7, 184.0, 184.0, 184.3, 184.0, 184.0, 184.0, 184.0, 185.0, 188.0, 187.0, 187.0, 187.0, 187.0, 187.3, 187.0, 187.0, 188.0, 188.0, 188.0, 188.0, 188.0, 188.7, 189.0, 189.0, 189.0, 189.0, 189.3, 189.0, 189.0, 190.0, 190.3, 191.0, 191.0, 191.0, 190.3, 190.7, 191.0, 191.0, 191.0], "persistence": [149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.3, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 152.3, 159.0, 158.7, 157.3, 155.3, 155.0, 155.0, 155.0, 154.0, 154.0, 153.7, 152.0, 152.7, 153.0, 153.0, 153.0, 153.0, 152.0, 151.0, 151.7, 152.0, 152.0, 152.3, 154.0, 154.0, 152.3, 151.0, 151.0, 151.0, 150.0, 148.7, 146.0, 146.0, 138.3, 133.7, 133.7, 134.0, 135.3, 136.0, 136.0, 136.0, 137.3, 140.0, 146.7, 154.7, 156.0, 156.0, 156.0, 158.7, 159.0, 159.0, 158.3, 157.3, 158.0, 158.0, 158.0, 158.0, 158.0, 159.0, 159.0, 159.7, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 159.7, 159.0, 159.0, 156.3, 151.0, 143.0, 136.7, 127.0, 115.7, 94.0, 94.0, 81.7, 80.3, 79.0, 79.3, 79.0, 64.0, 59.7, 60.0, 60.0, 63.3, 66.7, 71.7, 73.3, 79.3, 77.3, 73.3, 71.0, 66.3, 54.7, 42.0, 34.7, 63.7, 64.0, 57.7, 56.7, 56.7, 59.7, 60.3, 60.7, 61.0, 64.7, 80.0, 92.3, 119.0, 138.0, 143.0, 148.7, 152.3, 153.7, 155.3, 155.7, 156.0, 156.0, 156.0, 156.7, 156.3, 157.0, 157.0, 157.7, 159.7, 161.3, 163.7, 164.0, 163.3, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 165.0, 164.0, 164.0, 178.3, 173.7, 161.7, 153.3, 138.0, 137.0, 115.3, 108.3, 105.0, 97.3, 96.0, 97.7, 98.7, 85.0, 77.7, 76.7, 75.7, 77.3, 81.3, 91.7, 93.0, 99.7, 103.0, 101.3, 98.0, 93.0, 80.7, 68.7, 61.0, 61.3, 50.0, 48.0, 48.3, 49.0, 49.3, 51.3, 51.0, 54.0, 61.0, 74.0, 103.0, 130.7, 147.3, 147.7, 148.7, 139.3, 139.3, 134.7, 136.0, 136.0, 136.0, 136.0, 136.0, 136.7, 137.0, 137.7, 140.7, 140.7, 143.3, 145.0, 145.0, 145.0, 144.7, 144.7, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 145.0, 144.3, 144.0, 147.3, 154.0, 149.0, 143.7, 137.7, 144.0, 119.3, 119.3, 116.7, 108.7, 107.3, 77.3, 77.0, 80.3, 82.0, 81.3, 81.3, 85.0, 90.0, 97.7, 105.5, 114.0, 117.7, 113.0, 109.3, 102.7, 95.0, 91.3, 87.3, 88.3, 97.7, 97.7, 98.0, 101.0, 101.3, 99.3, 98.7, 102.3, 110.0, 116.7, 131.7, 150.7, 165.0, 178.7, 181.3, 175.3, 179.3, 181.0, 182.0, 182.3, 183.3, 184.3, 185.3, 186.0, 186.0, 186.0, 186.0, 185.3, 189.0, 189.0, 189.0, 189.0, 189.0, 189.0, 190.7, 191.0, 191.0, 191.0, 191.0, 191.0, 191.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 192.0, 191.0, 191.0, 195.0, 204.0, 196.0, 183.0, 156.3, 138.0, 120.0, 107.7, 102.0, 98.0, 97.0, 95.3, 79.0, 76.0, 71.0, 71.0, 74.0, 78.0, 80.3, 86.3, 93.0, 101.7, 104.3, 103.7, 101.3, 92.7, 86.3, 81.0, 74.3, 72.0, 71.7, 71.7, 72.7, 72.0, 74.0, 74.0, 75.0, 75.7, 79.7, 82.7, 95.3, 122.0, 139.3, 147.7, 127.0, 135.0, 134.3, 134.0, 135.0, 135.0, 135.7, 136.0, 137.0, 138.0, 139.0, 138.0, 139.7, 138.0, 140.0, 140.0, 139.3, 140.0, 141.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 141.7, 140.0, 137.3, 147.7, 146.7, 132.7, 161.7, 144.7, 125.3, 115.0, 111.0, 105.7, 101.0, 100.3, 101.0, 101.3, 85.7, 87.0, 87.7, 89.3, 96.3, 91.3, 93.0, 98.3, 95.3, 91.3, 87.3, 84.0, 76.7, 71.7, 71.3, 70.7, 72.7, 73.3, 74.0, 75.3, 76.0, 76.3, 79.7, 88.0, 99.3, 117.7, 133.0, 141.7, 151.7, 153.7, 157.3, 161.3, 164.7, 169.0, 171.0, 171.0, 171.3, 172.7, 173.0, 173.0, 173.7, 174.7, 174.3, 175.3, 176.0, 176.0, 175.3, 176.0, 176.0, 176.0, 176.0, 176.0, 176.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 177.0, 176.7, 176.0, 175.0, 173.7, 172.0, 171.3, 170.0, 170.0, 170.0, 168.3, 168.0, 167.0, 167.3, 168.0, 158.3, 159.7, 161.0, 159.7, 160.0, 161.3, 161.0, 161.7, 162.0, 163.0, 163.0, 162.3, 161.0, 160.3, 160.0, 160.3, 159.3, 159.0, 159.0, 158.3, 158.7, 160.0, 159.3, 159.3, 159.0, 162.3, 163.7, 163.7, 164.0, 164.0, 164.0, 164.7, 164.7, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 164.0, 163.7, 163.0, 162.7, 162.0, 161.7, 162.0, 162.0, 162.0, 162.0], "seasonal_naive": [179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 179.0, 178.0, 177.3, 174.0, 168.7, 160.3, 154.0, 144.7, 127.0, 104.3, 104.3, 102.7, 97.0, 93.7, 86.7, 84.7, 85.0, 81.7, 84.0, 85.0, 85.7, 89.3, 91.7, 95.7, 96.3, 94.7, 95.3, 91.0, 86.7, 73.0, 58.0, 54.0, 53.3, 54.7, 54.7, 55.7, 56.3, 56.3, 57.0, 57.0, 58.0, 64.0, 77.0, 95.3, 122.3, 136.0, 151.3, 147.3, 130.0, 129.3, 133.0, 135.0, 136.0, 136.0, 136.0, 137.0, 137.0, 137.0, 137.7, 139.0, 139.3, 141.7, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 141.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 142.0, 141.0, 140.7, 136.7, 133.0, 137.3, 151.0, 142.0, 126.7, 110.0, 114.0, 99.7, 94.0, 94.0, 91.0, 85.7, 83.7, 83.3, 83.0, 81.3, 81.3, 88.0, 91.3, 93.0, 96.3, 99.0, 97.0, 95.0, 91.7, 84.0, 81.7, 80.0, 70.7, 56.7, 58.7, 58.7, 57.7, 57.0, 58.0, 58.3, 62.7, 66.3, 73.3, 93.7, 113.3, 127.7, 135.7, 140.7, 138.0, 139.3, 127.7, 110.3, 111.3, 111.0, 111.0, 111.3, 111.7, 111.3, 112.3, 113.0, 114.0, 115.0, 116.0, 116.3, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 117.0, 116.3, 116.0, 113.3, 151.7, 167.7, 160.0, 147.0, 138.3, 115.3, 105.3, 108.3, 89.7, 84.7, 86.3, 86.0, 85.0, 85.3, 85.0, 86.3, 88.7, 92.0, 94.3, 108.3, 127.0, 132.0, 134.0, 128.7, 124.7, 120.7, 113.3, 114.0, 115.0, 113.7, 114.7, 113.0, 114.0, 117.3, 120.3, 119.7, 119.3, 124.7, 130.7, 139.0, 161.0, 174.7, 189.7, 172.7, 125.0, 127.0, 128.7, 129.0, 130.0, 130.7, 131.3, 130.3, 133.3, 134.0, 134.0, 134.0, 134.0, 134.0, 134.7, 136.0, 136.3, 137.0, 137.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 138.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 139.0, 138.0, 137.7, 139.0, 150.3, 149.0, 143.0, 131.3, 123.7, 103.3, 98.7, 94.0, 92.7, 92.3, 91.0, 90.7, 88.3, 83.0, 81.3, 82.7, 83.7, 86.7, 91.7, 93.3, 99.7, 100.3, 100.7, 94.3, 89.3, 78.3, 62.0, 58.3, 59.3, 60.0, 56.7, 56.3, 59.0, 61.0, 61.0, 61.3, 63.3, 67.3, 81.0, 95.7, 119.7, 130.3, 136.7, 131.3, 131.3, 136.0, 139.0, 114.3, 114.7, 114.0, 114.0, 114.3, 115.3, 114.3, 117.0, 121.3, 122.3, 123.3, 124.0, 124.0, 124.0, 141.3, 159.0, 141.0, 141.7, 142.0, 142.7, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 143.0, 142.0, 142.0, 139.3, 135.7, 133.3, 128.7, 119.7, 115.7, 93.3, 81.7, 85.7, 81.7, 71.0, 70.0, 70.0, 68.0, 63.0, 60.7, 60.3, 62.7, 68.7, 71.3, 71.3, 76.0, 82.7, 80.7, 77.3, 66.0, 60.7, 55.0, 50.3, 47.3, 46.7, 49.0, 49.0, 49.3, 48.0, 47.7, 47.7, 54.7, 72.0, 86.7, 102.3, 119.0, 126.0, 126.7, 114.3, 109.7, 110.3, 113.7, 114.7, 115.0, 115.0, 116.0, 117.3, 118.0, 118.0, 116.7, 116.3, 116.7, 117.0, 125.0, 125.0, 126.0, 126.0, 125.3, 126.0, 126.0, 125.3, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 135.3, 157.0, 155.7, 155.0, 155.0, 154.3, 152.7, 147.3, 140.0, 140.0, 140.0, 140.0, 139.3, 139.3, 139.0, 139.7, 141.3, 140.7, 141.0, 140.7, 140.0, 141.0, 143.7, 141.3, 141.0, 140.0, 140.0, 128.0, 102.3, 102.0, 102.3, 101.7, 101.0, 101.3, 102.3, 102.0, 102.0, 102.0, 137.3, 138.0, 138.7, 139.3, 140.3, 140.3, 141.0, 141.0, 141.7, 142.7, 143.0, 144.0, 143.3, 142.0, 142.0, 143.0, 143.0, 143.7, 146.3, 148.0, 148.0, 148.3, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.3, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 149.0, 152.3, 159.0, 158.7, 157.3, 155.3, 155.0, 155.0, 155.0, 154.0, 154.0, 153.7, 152.0, 152.7, 153.0, 153.0, 153.0, 153.0, 152.0, 151.0, 151.7, 152.0, 152.0, 152.3, 154.0, 154.0, 152.3, 151.0, 151.0, 151.0, 150.0, 148.7, 146.0, 146.0, 138.3, 133.7, 133.7, 134.0, 135.3, 136.0, 136.0, 136.0, 137.3, 140.0, 146.7, 154.7, 156.0, 156.0, 156.0, 158.7, 159.0, 159.0, 158.3, 157.3, 158.0, 158.0, 158.0, 158.0, 158.0, 159.0, 159.0, 159.7, 160.0, 160.0, 160.0, 160.0], "profile_mean": [128.1, 128.1, 128.3, 128.1, 128.0, 127.9, 127.5, 127.6, 127.7, 127.7, 127.7, 127.7, 127.7, 127.7, 127.7, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.8, 127.9, 127.8, 127.8, 127.8, 127.8, 127.4, 126.6, 125.8, 124.6, 122.5, 117.5, 111.8, 104.1, 95.3, 87.2, 81.2, 70.9, 62.8, 56.1, 53.3, 53.4, 52.5, 50.4, 46.3, 44.6, 45.2, 50.2, 52.9, 53.8, 59.0, 63.2, 61.4, 59.3, 55.3, 45.6, 37.1, 33.5, 32.9, 34.2, 33.5, 30.2, 34.8, 38.1, 39.6, 41.2, 43.0, 47.8, 58.2, 72.8, 92.1, 104.3, 108.8, 104.9, 109.3, 113.8, 113.6, 112.0, 112.1, 112.5, 112.5, 113.0, 113.5, 114.0, 114.8, 116.7, 121.1, 124.7, 127.3, 128.0, 128.1, 128.3, 128.2, 128.3, 128.2, 128.3, 128.4, 129.2, 128.5, 128.8, 129.2, 129.2, 129.8, 130.3, 130.3, 130.3, 130.2, 129.8, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 129.9, 130.3, 131.0, 130.6, 130.1, 129.6, 129.1, 128.3, 123.2, 115.0, 106.4, 96.0, 86.2, 78.7, 71.5, 65.9, 60.8, 57.6, 55.6, 54.2, 50.6, 47.0, 45.9, 46.8, 51.4, 56.6, 55.8, 58.7, 59.8, 58.8, 53.6, 49.6, 41.2, 36.2, 32.8, 32.1, 33.5, 32.7, 31.6, 33.7, 35.8, 37.4, 38.8, 40.8, 44.1, 54.6, 71.9, 91.2, 105.1, 109.1, 101.4, 102.3, 104.0, 103.9, 102.5, 102.9, 103.5, 104.3, 105.2, 106.2, 106.8, 107.4, 107.6, 109.1, 112.7, 113.1, 113.2, 113.3, 113.4, 114.7, 115.3, 115.4, 115.5, 115.5, 113.0, 115.0, 114.9, 115.9, 115.9, 115.8, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.4, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.5, 116.7, 116.9, 116.5, 118.6, 126.8, 125.3, 121.6, 114.5, 106.3, 98.3, 90.9, 83.4, 79.0, 75.8, 75.4, 72.8, 70.5, 69.5, 69.0, 68.9, 70.9, 76.9, 81.4, 86.0, 89.7, 91.6, 90.8, 87.7, 84.1, 80.7, 78.0, 74.9, 74.5, 77.2, 78.4, 78.5, 79.2, 81.1, 82.8, 84.0, 86.5, 90.3, 95.0, 102.7, 120.0, 128.9, 137.4, 131.8, 128.5, 126.4, 124.2, 123.4, 124.3, 125.0, 125.4, 126.0, 126.8, 126.4, 126.6, 127.5, 128.5, 130.3, 131.6, 132.0, 133.0, 133.2, 133.8, 133.8, 133.9, 134.0, 133.2, 131.6, 131.7, 131.6, 133.1, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.7, 133.8, 133.8, 133.8, 133.8, 133.8, 133.8, 133.7, 133.6, 133.2, 132.4, 131.6, 129.1, 128.8, 124.3, 119.0, 110.6, 102.0, 92.4, 83.3, 75.1, 70.2, 65.5, 60.2, 58.9, 57.0, 53.7, 52.8, 51.4, 51.7, 57.7, 61.9, 63.4, 65.2, 70.1, 68.4, 64.0, 59.4, 51.5, 43.9, 39.7, 39.0, 40.3, 40.0, 38.7, 41.1, 43.8, 46.6, 48.2, 51.1, 56.0, 64.4, 79.1, 97.2, 107.9, 115.3, 116.5, 115.8, 116.3, 114.3, 110.9, 111.1, 111.5, 111.9, 112.2, 113.0, 113.9, 114.6, 115.7, 118.1, 122.2, 122.7, 122.9, 123.4, 124.3, 125.0, 126.3, 128.5, 129.0, 130.6, 131.1, 131.0, 131.4, 131.8, 131.9, 132.0, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.1, 132.2, 132.5, 132.2, 131.7, 130.9, 127.9, 128.9, 124.6, 117.1, 106.1, 92.8, 86.7, 80.0, 72.0, 69.0, 66.4, 63.6, 61.8, 59.9, 57.4, 55.6, 55.8, 58.5, 64.5, 69.9, 73.7, 75.9, 77.8, 76.4, 73.0, 68.7, 60.6, 55.6, 50.7, 51.2, 52.3, 52.6, 51.5, 50.7, 50.8, 52.0, 53.5, 57.4, 69.2, 80.6, 100.0, 108.9, 112.9, 115.9, 114.7, 114.4, 114.6, 113.2, 112.4, 113.2, 112.9, 114.0, 114.7, 115.1, 115.5, 117.0, 117.5, 118.9, 121.7, 122.8, 123.2, 123.5, 123.8, 124.2, 124.6, 124.0, 125.1, 125.3, 125.4, 125.5, 125.7, 125.8, 125.9, 125.9, 126.0, 126.0, 126.0, 125.2, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.2, 125.2, 125.7, 126.1, 128.9, 128.8, 128.2, 127.2, 126.3, 125.6, 124.9, 124.3, 123.9, 123.4, 123.0, 122.6, 121.8, 121.8, 120.9, 120.6, 120.8, 121.0, 121.0, 121.0, 121.0, 121.2, 120.4, 119.8, 118.7, 117.3, 116.6, 116.7, 116.0, 115.5, 114.5, 113.7, 113.6, 113.7, 113.8, 114.1, 114.6, 115.2, 115.7, 118.2, 119.7, 121.0, 121.7, 122.2, 122.8, 123.9, 124.5, 124.9, 125.1, 124.7, 124.5, 124.6, 124.6, 124.6, 124.6, 124.6, 125.1, 125.2, 125.3, 125.3, 125.4, 125.3, 125.4, 125.4, 124.0, 125.1, 125.3, 125.4, 125.5, 125.7, 125.8, 125.9, 125.9, 126.0, 126.0, 126.0, 125.2, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.3, 125.2, 125.2, 125.7, 126.1, 128.9, 128.8, 128.2, 127.2, 126.3, 125.6, 124.9, 124.3, 123.9, 123.4, 123.0, 122.6, 121.8, 121.8, 120.9, 120.6, 120.8, 121.0, 121.0, 121.0, 121.0, 121.2, 120.4, 119.8, 118.7, 117.3, 116.6, 116.7, 116.0, 115.5, 114.5, 113.7, 113.6, 113.7, 113.8, 114.1, 114.6, 115.2, 115.7, 118.2, 119.7, 121.0, 121.7, 122.2, 122.8, 123.9, 124.5, 124.9, 125.1, 124.7, 124.5, 124.6, 124.6, 124.6, 124.6, 124.6, 125.1, 125.2, 125.3, 125.3, 125.4, 125.3, 125.4, 125.4]}, "jump_hours": [2, 0, 0, 0, 0, 0, 0, 4, 8, 5, 4, 1, 0, 0, 1, 1, 0, 0, 5, 15, 0, 0, 1, 1], "jump_up": 20, "jump_down": 28, "night": [null, 120.0, 126.0, 124.0, 124.0, 120.0, 127.0, 115.0, 113.0, 120.0, 120.0, 120.0, 176.0, 125.0, 116.0, 114.0, 126.0, 124.0, 133.0, 123.0, 122.0, 117.0, 118.0, 115.0, 116.0, 118.0, 122.0, 126.0, 119.0, 123.0, 129.0, 117.0, 120.0, 121.0, 110.0, 109.0, 115.0, 120.0, 120.0, 120.0, 131.0, 111.0, 106.0, 110.0, 130.0, 130.0, 131.0, 127.0, 128.0, 113.0, 120.0, 115.0, 101.0, 121.0, 121.0, 111.0, 120.0, 121.0, 131.0, 100.0, 101.0, 107.0, 96.0, 121.0, 118.0, 130.0, 101.0, 120.0, 131.0, 110.0, 121.0, 120.0, 124.0, 130.0, 125.0, 131.0, 121.0, 123.0, 121.0, 118.0, 91.0, 129.0, 117.0, 135.0, 134.0, 131.0, 130.0, 130.0, 136.0, 130.0, 135.0, 118.0, 122.0, 133.0, 114.0, 124.0, 107.0, 116.0, 115.0, 114.0, 131.0, 97.0, 133.0, 123.0, 133.0, 112.0, 123.0, 122.0, 114.0, 143.0, 138.0, 113.0, 119.0, 123.0, 118.0, 115.0, 112.0, 113.0, 123.0, 107.0, 123.0, 121.0, 105.0, 133.0, 119.0, 113.0, 91.0, 106.0, 130.0, 112.0, 77.0, 104.0, 115.0, 98.0, 120.0, 112.0, 147.0, 133.0, 128.0, 124.0, 110.0, 110.0, 143.0, 127.0, 116.0, 142.0, 110.0, 108.0, 110.0, 129.0, 137.0, 114.0, 139.0, 133.0, 123.0, 124.0, 145.0, 122.0, 145.0, 169.0, 145.0, 109.0, 132.0, 170.0, 127.0, 151.0, 164.0, 135.0, 127.0, 129.0, 132.0, 139.0, 143.0, 123.0, 143.0, 121.0, 126.0, 145.0, 168.0, 152.0, 146.0, 132.7, 138.0, 141.0, 220.0, 136.0, 185.0, 217.0, 198.0, 140.0, 143.0, 208.0, 177.0, 156.0, 163.0, 144.0, 145.0, 147.0, 148.0, 175.0, 210.0, 162.0, 179.0, 150.0, 152.0, 176.0, 153.0, 214.0, 216.0, null, null, null, 178.0, 178.0, 172.0, 177.0, 198.0, 201.0, 201.0, 205.0, 203.0, 166.0, 187.0, 187.0, 137.0, 138.0, 149.0, 151.0, 141.0, 125.0, 137.0, 143.0, 149.0, 160.7, 124.0, 149.0, 142.0, 167.0, 150.0, 156.0, 152.0, 129.0, 148.0, 154.0, 165.0, 143.0, 148.0, 139.0, 131.0, 159.0, 155.0, 140.0, 156.0, 158.0, 150.0, 141.0, 218.0, 147.0, 138.0, 159.0, 160.0, 153.0, 130.0, 187.0, 123.0, 139.0, 159.0, 163.0, 165.0, 148.0, 195.0, 150.0, 167.0, 164.0, 163.0, 163.0, 155.0, 160.0, 150.0, 112.0, 135.0, 154.0, 140.0, 114.0, 152.0, 167.0, 169.0, 154.0, 166.0, 160.0, 150.0, 160.0, 179.7, 156.0, 163.0, 163.0, 172.0, 123.0, 196.0, 174.0, 133.0, 166.0, 163.0, 168.0, 118.0, 141.0, 157.0, 166.0, 165.0, 179.0, 142.0, 117.0, 138.0, 143.0, 125.0, 149.0, 160.0, 165.0, 145.0, 192.0, 143.0, 177.0, 162.0, 191.0, 134.0, 142.0, 206.0, 163.0, 149.0, 154.0, 171.0, 185.0, 129.0, 201.0, 132.0, 175.0, 144.0, 149.0, 177.0, 168.0, 155.0, 138.0, 138.0, 123.0, 145.0, 133.0, 160.0, 147.0, 184.0, 133.0, 133.0, 137.0, 173.0, 177.0, 178.0, 153.0, 156.0, 154.0, 153.0, 130.0, 131.0, 167.0, 159.0, 147.0, 131.0], "res": [{"H": 4, "split": "val", "scope": "all_day", "method": "persistence", "n": 1440, "MAE": 7.59, "RMSE": 15.26}, {"H": 4, "split": "val", "scope": "all_day", "method": "seasonal_naive", "n": 1440, "MAE": 12.67, "RMSE": 17.37}, {"H": 4, "split": "val", "scope": "all_day", "method": "profile_mean", "n": 1440, "MAE": 31.66, "RMSE": 34.08}, {"H": 4, "split": "val", "scope": "daytime_07_20", "method": "persistence", "n": 780, "MAE": 13.19, "RMSE": 20.6}, {"H": 4, "split": "val", "scope": "daytime_07_20", "method": "seasonal_naive", "n": 780, "MAE": 13.2, "RMSE": 18.43}, {"H": 4, "split": "val", "scope": "daytime_07_20", "method": "profile_mean", "n": 780, "MAE": 31.96, "RMSE": 33.64}, {"H": 4, "split": "test", "scope": "all_day", "method": "persistence", "n": 5856, "MAE": 6.5, "RMSE": 13.66}, {"H": 4, "split": "test", "scope": "all_day", "method": "seasonal_naive", "n": 5856, "MAE": 21.66, "RMSE": 27.65}, {"H": 4, "split": "test", "scope": "all_day", "method": "profile_mean", "n": 5856, "MAE": 27.74, "RMSE": 32.94}, {"H": 4, "split": "test", "scope": "daytime_07_20", "method": "persistence", "n": 3172, "MAE": 11.22, "RMSE": 18.37}, {"H": 4, "split": "test", "scope": "daytime_07_20", "method": "seasonal_naive", "n": 3172, "MAE": 21.08, "RMSE": 28.05}, {"H": 4, "split": "test", "scope": "daytime_07_20", "method": "profile_mean", "n": 3172, "MAE": 27.33, "RMSE": 31.81}, {"H": 96, "split": "val", "scope": "all_day", "method": "persistence", "n": 1440, "MAE": 26.63, "RMSE": 35.32}, {"H": 96, "split": "val", "scope": "all_day", "method": "seasonal_naive", "n": 1440, "MAE": 12.67, "RMSE": 17.37}, {"H": 96, "split": "val", "scope": "all_day", "method": "profile_mean", "n": 1440, "MAE": 31.66, "RMSE": 34.08}, {"H": 96, "split": "val", "scope": "daytime_07_20", "method": "persistence", "n": 780, "MAE": 29.1, "RMSE": 38.55}, {"H": 96, "split": "val", "scope": "daytime_07_20", "method": "seasonal_naive", "n": 780, "MAE": 13.2, "RMSE": 18.43}, {"H": 96, "split": "val", "scope": "daytime_07_20", "method": "profile_mean", "n": 780, "MAE": 31.96, "RMSE": 33.64}, {"H": 96, "split": "test", "scope": "all_day", "method": "persistence", "n": 5856, "MAE": 24.17, "RMSE": 32.6}, {"H": 96, "split": "test", "scope": "all_day", "method": "seasonal_naive", "n": 5856, "MAE": 21.66, "RMSE": 27.65}, {"H": 96, "split": "test", "scope": "all_day", "method": "profile_mean", "n": 5856, "MAE": 27.72, "RMSE": 32.93}, {"H": 96, "split": "test", "scope": "daytime_07_20", "method": "persistence", "n": 3172, "MAE": 25.86, "RMSE": 35.29}, {"H": 96, "split": "test", "scope": "daytime_07_20", "method": "seasonal_naive", "n": 3172, "MAE": 21.08, "RMSE": 28.05}, {"H": 96, "split": "test", "scope": "daytime_07_20", "method": "profile_mean", "n": 3172, "MAE": 27.3, "RMSE": 31.79}], "bp": [{"H": 4, "regime": "break", "method": "persistence", "n": 312, "MAE": 11.09}, {"H": 4, "regime": "break", "method": "seasonal_naive", "n": 312, "MAE": 34.18}, {"H": 4, "regime": "break", "method": "profile_mean", "n": 312, "MAE": 11.74}, {"H": 4, "regime": "exam", "method": "persistence", "n": 520, "MAE": 15.99}, {"H": 4, "regime": "exam", "method": "seasonal_naive", "n": 520, "MAE": 18.18}, {"H": 4, "regime": "exam", "method": "profile_mean", "n": 520, "MAE": 28.74}, {"H": 4, "regime": "off_day", "method": "persistence", "n": 1248, "MAE": 3.08}, {"H": 4, "regime": "off_day", "method": "seasonal_naive", "n": 1248, "MAE": 23.3}, {"H": 4, "regime": "off_day", "method": "profile_mean", "n": 1248, "MAE": 29.05}, {"H": 4, "regime": "teaching", "method": "persistence", "n": 1092, "MAE": 18.29}, {"H": 4, "regime": "teaching", "method": "seasonal_naive", "n": 1092, "MAE": 16.17}, {"H": 4, "regime": "teaching", "method": "profile_mean", "n": 1092, "MAE": 29.14}, {"H": 96, "regime": "break", "method": "persistence", "n": 312, "MAE": 16.15}, {"H": 96, "regime": "break", "method": "seasonal_naive", "n": 312, "MAE": 34.18}, {"H": 96, "regime": "break", "method": "profile_mean", "n": 312, "MAE": 11.74}, {"H": 96, "regime": "exam", "method": "persistence", "n": 520, "MAE": 20.85}, {"H": 96, "regime": "exam", "method": "seasonal_naive", "n": 520, "MAE": 18.18}, {"H": 96, "regime": "exam", "method": "profile_mean", "n": 520, "MAE": 28.74}, {"H": 96, "regime": "off_day", "method": "persistence", "n": 1248, "MAE": 24.84}, {"H": 96, "regime": "off_day", "method": "seasonal_naive", "n": 1248, "MAE": 23.3}, {"H": 96, "regime": "off_day", "method": "profile_mean", "n": 1248, "MAE": 28.98}, {"H": 96, "regime": "teaching", "method": "persistence", "n": 1092, "MAE": 32.18}, {"H": 96, "regime": "teaching", "method": "seasonal_naive", "n": 1092, "MAE": 16.17}, {"H": 96, "regime": "teaching", "method": "profile_mean", "n": 1092, "MAE": 29.14}]};
+(function(){
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function S(t, a, p){ const e = document.createElementNS(NS, t); if (a) for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+function T(p, x, y, txt, cls, anchor){ const e = S("text", {x: x, y: y, class: cls || "tick", "text-anchor": anchor || "middle"}, p); e.textContent = txt; return e; }
+const $ = id => document.getElementById(id);
+const fmt = (v, d) => (v == null || !isFinite(v)) ? "—" : v.toFixed(d == null ? 1 : d);
+const pad2 = n => String(n).padStart(2, "0");
+const hm = slot => pad2(Math.floor(slot / 4)) + ":" + pad2((slot % 4) * 15);
+const WD = ["一","二","三","四","五","六","日"];
+
+/* ---------- frame & primitives ---------- */
+function frame(host, o){
+  host.querySelectorAll("svg.plot,.tip").forEach(n => n.remove());
+  const W = Math.max(260, host.clientWidth || 600), H = o.h || 240;
+  const m = Object.assign({l: 46, r: 14, t: 14, b: o.xlab ? 46 : 30}, o.m || {});
+  const svg = S("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, class: "plot", role: "img", "aria-label": o.label || ""});
+  host.insertBefore(svg, host.firstChild);
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const sx = v => m.l + (v - o.x[0]) / (o.x[1] - o.x[0]) * iw;
+  const sy = v => m.t + ih - (v - o.y[0]) / (o.y[1] - o.y[0]) * ih;
+  const g = S("g", {}, svg);
+  (o.yt || []).forEach(v => { S("line", {x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), class: "grid"}, g); T(g, m.l - 7, sy(v) + 4, o.yf ? o.yf(v) : v, "tick", "end"); });
+  (o.xt || []).forEach(t => { const v = (t && t.v != null) ? t.v : t; const l = (t && t.l != null) ? t.l : (o.xf ? o.xf(v) : v);
+    if (o.xgrid) S("line", {x1: sx(v), x2: sx(v), y1: m.t, y2: m.t + ih, class: "grid"}, g);
+    if (l !== "") T(g, sx(t && t.lv != null ? t.lv : v), m.t + ih + 17, l, "tick"); });
+  S("line", {x1: m.l, x2: W - m.r, y1: m.t + ih, y2: m.t + ih, class: "axis"}, g);
+  if (o.xlab) T(g, m.l + iw / 2, H - 8, o.xlab, "alab");
+  if (o.ylab){ const e = T(g, 12, m.t + ih / 2, o.ylab, "alab"); e.setAttribute("transform", "rotate(-90 12 " + (m.t + ih / 2) + ")"); }
+  return {svg, g, sx, sy, W, H, m, iw, ih, host, o};
+}
+function path(P, xs, ys, cls){ let d = "", pen = false;
+  for (let i = 0; i < xs.length; i++){ const y = ys[i]; if (y == null || !isFinite(y)){ pen = false; continue; }
+    d += (pen ? "L" : "M") + P.sx(xs[i]).toFixed(1) + " " + P.sy(y).toFixed(1); pen = true; }
+  return S("path", {d, class: cls}, P.svg); }
+function stepPath(P, xs, ys, cls){ // piecewise constant, xs are segment starts, last segment to x1
+  let d = ""; for (let i = 0; i < xs.length; i++){ const x0 = P.sx(xs[i]), x1 = P.sx(i + 1 < xs.length ? xs[i + 1] : P.o.x[1]), y = P.sy(ys[i]);
+    d += (i ? "L" : "M") + x0.toFixed(1) + " " + y.toFixed(1) + "L" + x1.toFixed(1) + " " + y.toFixed(1); }
+  return S("path", {d, class: cls}, P.svg); }
+function area(P, xs, lo, hi, cls){ let d = ""; const n = xs.length;
+  for (let i = 0; i < n; i++) d += (i ? "L" : "M") + P.sx(xs[i]).toFixed(1) + " " + P.sy(hi[i]).toFixed(1);
+  for (let i = n - 1; i >= 0; i--) d += "L" + P.sx(xs[i]).toFixed(1) + " " + P.sy(lo[i]).toFixed(1);
+  return S("path", {d: d + "Z", class: cls}, P.svg); }
+function hover(P, xs, info){ // info(i) -> {html, pts:[y...]}
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; P.host.appendChild(tip);
+  const vl = S("line", {class: "xhair", y1: P.m.t, y2: P.m.t + P.ih}, P.svg); vl.style.display = "none";
+  const dots = [];
+  const ov = S("rect", {x: P.m.l, y: P.m.t, width: P.iw, height: P.ih, fill: "transparent"}, P.svg);
+  const hide = () => { tip.hidden = true; vl.style.display = "none"; dots.forEach(d => d.remove()); dots.length = 0; };
+  ov.addEventListener("pointermove", e => {
+    const r = P.svg.getBoundingClientRect(); const px = e.clientX - r.left;
+    const v = P.o.x[0] + (px - P.m.l) / P.iw * (P.o.x[1] - P.o.x[0]);
+    let lo = 0, hi = xs.length - 1; while (hi - lo > 1){ const mid = (lo + hi) >> 1; if (xs[mid] < v) lo = mid; else hi = mid; }
+    const i = Math.abs(xs[lo] - v) <= Math.abs(xs[hi] - v) ? lo : hi;
+    const inf = info(i); if (!inf){ hide(); return; }
+    const X = P.sx(xs[i]); vl.setAttribute("x1", X); vl.setAttribute("x2", X); vl.style.display = "";
+    dots.forEach(d => d.remove()); dots.length = 0;
+    (inf.pts || []).forEach(p => { if (p.y != null && isFinite(p.y)) dots.push(S("circle", {cx: X, cy: P.sy(p.y), r: 4, class: "ring", style: p.c ? "fill:" + p.c : ""}, P.svg)); });
+    tip.innerHTML = inf.html; tip.hidden = false;
+    const tw = tip.offsetWidth; let left = X + 12; if (left + tw > P.W) left = X - 12 - tw; if (left < 0) left = 0;
+    tip.style.left = left + "px"; tip.style.top = (P.m.t + 4) + "px";
+  });
+  ov.addEventListener("pointerleave", hide);
+}
+function live(host, draw){ let w = -1; const run = force => { const cw = host.clientWidth; if (force === true || cw !== w){ w = cw; draw(); } };
+  run(true); if ("ResizeObserver" in window) new ResizeObserver(() => run()).observe(host); return () => run(true); }
+function roundTopBar(x, y, w, h, r){ r = Math.min(r, w / 2, h); return "M" + x + " " + (y + h) + "V" + (y + r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "H" + (x + w - r) + "Q" + (x + w) + " " + y + " " + (x + w) + " " + (y + r) + "V" + (y + h) + "Z"; }
+
+/* ---------- TOC ---------- */
+(function toc(){
+  const secs = [...document.querySelectorAll("section.ch")];
+  const mk = ol => secs.forEach(s => { const li = document.createElement("li"); const a = document.createElement("a"); a.href = "#" + s.id;
+    a.innerHTML = '<span class="n">' + s.querySelector(".bay").textContent + '</span><span>' + s.dataset.short + "</span>"; li.appendChild(a); ol.appendChild(li); });
+  mk($("toc")); mk($("toc-m"));
+  const links = [...$("toc").querySelectorAll("a")];
+  if ("IntersectionObserver" in window){
+    const io = new IntersectionObserver(es => { es.forEach(e => { if (e.isIntersecting){ links.forEach(l => l.classList.toggle("on", l.getAttribute("href") === "#" + e.target.id)); } }); }, {rootMargin: "-20% 0px -70% 0px"});
+    secs.forEach(s => io.observe(s));
+  }
+})();
+
+
+
+/* ---------- jumps by hour ---------- */
+(function(){
+  const host = $("fig-jumps"); const v = DATA.jump_hours;
+  live(host, () => {
+    const narrow = host.clientWidth < 520;
+    const xt = []; for (let h = 0; h < 24; h += (narrow ? 3 : 2)) xt.push({v: h + 0.5, l: pad2(h) + ":00"});
+    const P = frame(host, {x: [0, 24], y: [0, 16], h: 210, yt: [0, 5, 10, 15], xt, ylab: "次数", m: {l: 44}});
+    const bw = P.iw / 24;
+    v.forEach((c, h) => { if (!c) return; const x = P.sx(h) + bw * 0.15, w = bw * 0.7, y = P.sy(c), hh = P.sy(0) - y;
+      const b = S("path", {d: roundTopBar(x, y, w, hh, 3), class: "bar1"}, P.svg); S("title", {}, b).textContent = pad2(h) + ":00–" + pad2(h) + ":59：" + c + " 次"; });
+    T(P.svg, P.sx(8.5), P.sy(v[8]) - 6, String(v[8]), "lab"); T(P.svg, P.sx(19.5), P.sy(v[19]) - 6, String(v[19]), "lab");
+  });
+})();
+
+/* ---------- night level ---------- */
+(function(){
+  const host = $("fig-night"); const v = DATA.night; const xs = v.map((_, i) => i);
+  const ms = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  const md = i => { let m = 0; while (m < 11 && ms[m + 1] <= i) m++; return (m + 1) + "/" + (i - ms[m] + 1); };
+  live(host, () => {
+    const narrow = host.clientWidth < 520;
+    const xt = ms.map((d, m) => ({v: d, l: (narrow && m % 2) ? "" : (m + 1) + "月"}));
+    const P = frame(host, {x: [0, 365], y: [60, 240], h: 230, yt: [60, 100, 140, 180, 220], xt, xgrid: true, ylab: "凌晨 3:00 可用车位", m: {l: 50}});
+    path(P, xs, v, "lthin");
+    hover(P, xs, i => v[i] == null ? null : {html: "2023/" + md(i) + " 03:00<br><b>" + fmt(v[i], 0) + "</b> 个空位", pts: [{y: v[i]}]});
+  });
+})();
+
+/* ---------- tables ---------- */
+(function(){
+  const res = DATA.res; const name = {persistence: "persistence", seasonal_naive: "seasonal naive", profile_mean: "profile mean"};
+  const tb = document.querySelector("#tbl-res tbody");
+  [4, 96].forEach(H => ["daytime_07_20", "all_day"].forEach(sc => {
+    const g = res.filter(r => r.H === H && r.scope === sc);
+    const get = (m, sp) => g.find(r => r.method === m && r.split === sp);
+    const best = sp => Math.min(...["persistence", "seasonal_naive", "profile_mean"].map(m => get(m, sp).MAE));
+    ["persistence", "seasonal_naive", "profile_mean"].forEach((m, k) => {
+      const tr = document.createElement("tr"); const v = get(m, "val"), t = get(m, "test");
+      tr.innerHTML = (k === 0 ? '<td rowspan="3">' + (H === 4 ? "1 小时" : "24 小时") + '</td><td rowspan="3">' + (sc === "all_day" ? "全天" : "白天 07–20") + "</td>" : "") +
+        "<td>" + name[m] + "</td>" +
+        '<td class="num' + (v.MAE === best("val") ? " win" : "") + '">' + v.MAE.toFixed(2) + '</td><td class="num">' + v.RMSE.toFixed(2) + "</td>" +
+        '<td class="num' + (t.MAE === best("test") ? " win" : "") + '">' + t.MAE.toFixed(2) + '</td><td class="num">' + t.RMSE.toFixed(2) + "</td>";
+      tb.appendChild(tr); });
+  }));
+  const bp = DATA.bp; const tb2 = document.querySelector("#tbl-reg tbody");
+  [4, 96].forEach(H => ["persistence", "seasonal_naive", "profile_mean"].forEach((m, k) => {
+    const g = r => bp.find(x => x.H === H && x.method === m && x.regime === r);
+    const best = r => Math.min(...["persistence", "seasonal_naive", "profile_mean"].map(mm => bp.find(x => x.H === H && x.method === mm && x.regime === r).MAE));
+    const tr = document.createElement("tr");
+    tr.innerHTML = (k === 0 ? '<td rowspan="3">' + (H === 4 ? "1 小时" : "24 小时") + "</td>" : "") + "<td>" + name[m] + "</td>" +
+      ["teaching", "exam", "break", "off_day"].map(r => '<td class="num' + (g(r).MAE === best(r) ? " win" : "") + '">' + g(r).MAE.toFixed(2) + "</td>").join("");
+    tb2.appendChild(tr); }));
+})();
+
+/* ---------- test week ---------- */
+(function(){
+  const host = $("fig-week");
+  const draw = () => {
+    const H = +document.querySelector('input[name="wh"]:checked').value; const w = DATA["w" + H];
+    const xs = w.target.map((_, i) => i);
+    const narrow = host.clientWidth < 520;
+    const xt = []; for (let d = 0; d < 7; d++) xt.push({v: d * 96 + 48, l: narrow ? "周" + WD[d] : "周" + WD[d] + " 11/" + (13 + d)});
+    const P = frame(host, {x: [0, 672], y: [0, 225], h: 280, yt: [0, 50, 100, 150, 200], xt, ylab: "可用车位", m: {l: 50}});
+    for (let d = 0; d <= 7; d++) S("line", {x1: P.sx(d * 96), x2: P.sx(d * 96), y1: P.m.t, y2: P.m.t + P.ih, class: "grid"}, P.g);
+    const on = {p: $("sh-p").checked, s: $("sh-s").checked, m: $("sh-m").checked};
+    if (on.m) path(P, xs, w.profile_mean, "l3");
+    if (on.s) path(P, xs, w.seasonal_naive, "l2");
+    if (on.p) path(P, xs, w.persistence, "l1");
+    path(P, xs, w.target, "lk");
+    hover(P, xs, i => {
+      const day = Math.floor(i / 96); let h = "11/" + (13 + day) + " 周" + WD[day] + " " + hm(i % 96) + "<br>真实 <b>" + fmt(w.target[i], 0) + "</b>";
+      if (on.p) h += "<br>persistence " + fmt(w.persistence[i], 0); if (on.s) h += "<br>seasonal naive " + fmt(w.seasonal_naive[i], 0); if (on.m) h += "<br>profile mean " + fmt(w.profile_mean[i], 0);
+      return {html: h, pts: [{y: w.target[i], c: "var(--ink)"}]}; });
+  };
+  const r = live(host, draw);
+  document.querySelectorAll('input[name="wh"]').forEach(e => e.addEventListener("change", r));
+  ["sh-p", "sh-s", "sh-m"].forEach(id => $(id).addEventListener("change", r));
+})();
+})();
+
+</script>
+
+</body>
+</html>
