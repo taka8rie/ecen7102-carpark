@@ -25,6 +25,7 @@
     ├── 01_prepare.py         第 1 步：清洗 + 重采样到 15 分钟
     ├── 02_features.py        第 2 步：做特征（H = 4 即 1 小时；H = 96 即 24 小时）
     ├── 03_baselines.py       第 3 步：三个基线
+    ├── 04_models.py          第 4 步：Ridge 与 XGBoost（预测变化量）
     ├── data/                 中间数据（不进仓库，运行脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -37,6 +38,7 @@ pip install -r requirements.txt
 python 01_prepare.py
 python 02_features.py
 python 03_baselines.py
+python 04_models.py
 ```
 
 如果要从官方原始 JSON 重新生成 `cp2023.parquet`（JSON 有 269 MB，不在仓库里）：
@@ -60,18 +62,20 @@ python build_calendar.py um_holidays_2023.csv um_calendar_2023.csv
 - [x] 第 1 步：清洗 + 重采样
 - [x] 第 2 步：特征
 - [x] 第 3 步：基线（persistence / seasonal naive / profile mean）
-- [ ] 第 4 步：Ridge、XGBoost 点预测
+- [x] 第 4 步：Ridge、XGBoost 点预测
 - [ ] 第 5 步：分位数 XGBoost
 - [ ] 第 6 步：共形预测（固定宽度、CQR，可选 ACI）
 - [ ] 第 7 步：11–12 月模拟评估与分时段分析
 - [ ] 报告（11/16）与展示（11/25）
 
-## 当前要打败的分数（白天 07:00–20:00，MAE，单位：车位）
+## 目前的结果（白天 07:00–20:00，MAE，单位：车位）
 
-| 步长 | 验证集 | 测试集 | 最好的基线 |
+| 步长 | 最好的基线（验证 / 测试） | Ridge（验证 / 测试） | XGBoost（验证 / 测试） |
 |---|---|---|---|
-| 1 小时 | 13.19 | 11.22 | persistence |
-| 24 小时 | 13.20 | 21.08 | seasonal naive |
+| 1 小时 | persistence 13.19 / 11.22 | 7.80 / 6.98 | **6.87 / 6.25** |
+| 24 小时 | seasonal naive 13.20 / 21.08 | 15.00 / 16.22 | **13.31 / 16.13** |
+
+所有选择只看验证集（9/16–9/30），测试集（11–12 月）只汇报一次。
 
 ## 数据来源
 
