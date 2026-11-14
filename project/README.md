@@ -14,6 +14,7 @@ Claude_work/
     ├── 05_quantile.py        第 5 步：分位数 XGBoost（未校准的 80% 区间）
     ├── 06_conformal.py       第 6 步：共形校准（固定宽度、CQR、分小时 CQR、ACI）
     ├── 07_evaluate.py        第 7 步：最终评估、可靠性、单边保证、报告用的表和图
+    ├── 08_extra.py           第 8 步：补充分析，输出到 results/extra/
     ├── data/                 中间数据（脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -29,6 +30,7 @@ python 04_models.py
 python 05_quantile.py
 python 06_conformal.py
 python 07_evaluate.py
+python 08_extra.py
 ```
 每一步都会读上一步的输出，所以要按顺序跑。
 

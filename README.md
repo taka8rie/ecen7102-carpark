@@ -19,6 +19,7 @@
 ├── 车位预测原理.html          原理讲义（下载后用浏览器打开，可离线阅读）
 ├── 车位预测项目实录.html       每一步做了什么、结果说明了什么（同上）
 ├── 车位预测项目讲解.html       整体讲解、答辩问答、5 分钟展示安排（同上）
+├── report/                   英文报告草稿 PDF（从 Claude Docs 导出）
 └── project/
     ├── README.md             运行说明
     ├── requirements.txt
@@ -30,6 +31,7 @@
     ├── 05_quantile.py        第 5 步：分位数 XGBoost（未校准的 80% 区间）
     ├── 06_conformal.py       第 6 步：共形校准（固定宽度、CQR、分小时 CQR、ACI）
     ├── 07_evaluate.py        第 7 步：最终评估与报告用的表和图
+    ├── 08_extra.py           第 8 步：补充分析（三段误差、每小时误差、bootstrap 置信区间、切分时间轴）
     ├── data/                 中间数据（不进仓库，运行脚本自动生成）
     └── results/              结果表格和图
 ```
@@ -46,6 +48,7 @@ python 04_models.py
 python 05_quantile.py
 python 06_conformal.py
 python 07_evaluate.py
+python 08_extra.py
 ```
 
 如果要从官方原始 JSON 重新生成 `cp2023.parquet`（JSON 有 269 MB，不在仓库里）：
