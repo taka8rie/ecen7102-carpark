@@ -138,7 +138,7 @@ fig.tight_layout(); fig.savefig(RESULTS / "fig_reliability.png", dpi=150)
 wk = pd.read_csv(RESULTS / "conformal_weekly.csv", parse_dates=["week_start"])
 fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
 for ax, H in zip(axes, [4, 96]):
-    for meth in ["qr", "cqr", "cqr_hour", "aci"]:
+    for meth in ["qr", "abs", "cqr", "cqr_hour", "aci"]:
         g = wk[(wk.H == H) & (wk.method == meth)]
         ax.plot(g["week_start"], g["coverage"], marker="o", ms=4, color=colors.get(meth, "#c4c7cc") if meth != "qr" else "#b07aa1", label=NAMES[meth])
     ax.axhline(0.8, color="black", lw=.8, ls="--")
